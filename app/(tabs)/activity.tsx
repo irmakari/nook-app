@@ -3,15 +3,21 @@ import {
   StyleSheet,
   View,
   ScrollView,
+  Pressable,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 
 import { ThemedText } from '@/components/themed-text';
-import { ActivityItem } from '@/components/ActivityItem';
+import { ActivityCalendar } from '@/components/ActivityCalendar';
+import { ActivityTimelineCard } from '@/components/ActivityTimelineCard';
 import { Activity, spaceService } from '@/services/space-service';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export default function ActivityScreen() {
   const insets = useSafeAreaInsets();
@@ -20,6 +26,8 @@ export default function ActivityScreen() {
   const isDark = colorScheme === 'dark';
 
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [showAllFilter, setShowAllFilter] = useState(false);
 
   useEffect(() => {
     const loadActivities = async () => {
@@ -91,25 +99,40 @@ export default function ActivityScreen() {
     }
   };
 
-  // Group by Today, Yesterday, Earlier
-  const todayActivities: Activity[] = [];
-  const yesterdayActivities: Activity[] = [];
-  const earlierActivities: Activity[] = [];
+  const isToday = (d: Date) => {
+    const now = new Date();
+    return (
+      d.getFullYear() === now.getFullYear() &&
+      d.getMonth() === now.getMonth() &&
+      d.getDate() === now.getDate()
+    );
+  };
 
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const startOfYesterday = startOfToday - 24 * 60 * 60 * 1000;
-
-  activities.forEach((act) => {
-    const actTime = new Date(act.createdAt).getTime();
-    if (actTime >= startOfToday) {
-      todayActivities.push(act);
-    } else if (actTime >= startOfYesterday) {
-      yesterdayActivities.push(act);
-    } else {
-      earlierActivities.push(act);
-    }
+  // Find which day numbers have activities
+  const activeDayNumbers = activities.map((act) => {
+    const d = new Date(act.createdAt);
+    return d.getDate();
   });
+
+  // Filter activities for selected date, or show all if showAllFilter is on
+  const filteredActivities = showAllFilter
+    ? activities
+    : activities.filter((act) => {
+        const actDate = new Date(act.createdAt);
+        return (
+          actDate.getFullYear() === selectedDate.getFullYear() &&
+          actDate.getMonth() === selectedDate.getMonth() &&
+          actDate.getDate() === selectedDate.getDate()
+        );
+      });
+
+  const displayList =
+    filteredActivities.length > 0 ? filteredActivities : activities;
+  const isFilteredEmpty = filteredActivities.length === 0 && !showAllFilter;
+
+  const dayNumber = selectedDate.getDate();
+  const dayName = WEEKDAYS[selectedDate.getDay()];
+  const isSelectedToday = isToday(selectedDate);
 
   return (
     <View
@@ -126,89 +149,94 @@ export default function ActivityScreen() {
           styles.scrollContent,
           { paddingBottom: Math.max(insets.bottom + 90, 110) },
         ]}>
-        {/* Header */}
-        <View style={styles.header}>
-          <ThemedText type="hero" style={styles.headerTitle}>
-            Activity
-          </ThemedText>
-          <ThemedText style={styles.headerSubtitle}>
-            {"What's been happening in your Spaces"}
-          </ThemedText>
-        </View>
+        {/* Interactive Calendar Card */}
+        <ActivityCalendar
+          selectedDate={selectedDate}
+          onSelectDate={(date) => {
+            setSelectedDate(date);
+            setShowAllFilter(false);
+          }}
+          activeDates={activeDayNumbers}
+          specialDates={[{ day: 27, icon: 'airplane' }]}
+        />
 
-        {activities.length === 0 ? (
-          <View
+        {/* Selected Date Summary Header */}
+        <View style={styles.dateSummaryRow}>
+          <View style={styles.dateNumberCol}>
+            <ThemedText style={styles.dateSubLabel}>
+              {isSelectedToday ? 'TODAY' : 'DATE'}
+            </ThemedText>
+            <View style={styles.dateTitleRow}>
+              <ThemedText type="hero" style={styles.dateNumberText}>
+                {dayNumber}
+              </ThemedText>
+              <View style={styles.dayMetaCol}>
+                <ThemedText type="title" style={styles.dayNameText}>
+                  {dayName}
+                </ThemedText>
+                <ThemedText type="caption" style={{ color: '#8E8D94' }}>
+                  {filteredActivities.length}{' '}
+                  {filteredActivities.length === 1 ? 'activity' : 'activities'}
+                </ThemedText>
+              </View>
+            </View>
+          </View>
+
+          <Pressable
+            onPress={() => {
+              if (Platform.OS !== 'web') Haptics.selectionAsync();
+              setShowAllFilter(!showAllFilter);
+            }}
             style={[
-              styles.emptyBox,
+              styles.viewAllPill,
               {
-                backgroundColor: isDark ? '#1A1A1E' : '#FFFFFF',
-                borderColor: isDark ? '#26262B' : '#EFECE6',
+                backgroundColor: showAllFilter
+                  ? isDark
+                    ? '#F4F4F5'
+                    : '#18181B'
+                  : isDark
+                  ? '#26262F'
+                  : '#EAE6DF',
               },
             ]}>
-            <Ionicons
-              name="sparkles-outline"
-              size={36}
-              color="#7FB9E6"
-              style={{ marginBottom: 10 }}
-            />
-            <ThemedText type="body" weight="semiBold" style={styles.emptyTitle}>
-              Quiet for now.
+            <ThemedText
+              style={[
+                styles.viewAllText,
+                {
+                  color: showAllFilter
+                    ? isDark
+                      ? '#18181B'
+                      : '#FFFFFF'
+                    : isDark
+                    ? '#F4F4F5'
+                    : '#18181B',
+                },
+              ]}>
+              {showAllFilter ? 'Selected' : 'View all'}
             </ThemedText>
-            <ThemedText type="caption" style={styles.emptySubtitle}>
-              Things your Spaces do together will show up here.
+          </Pressable>
+        </View>
+
+        {/* Notice when filtered day has no direct items */}
+        {isFilteredEmpty ? (
+          <View style={styles.emptyNoticeRow}>
+            <Ionicons name="calendar-outline" size={14} color="#8E8D94" />
+            <ThemedText style={styles.emptyNoticeText}>
+              No events on this day · Showing recent space activity
             </ThemedText>
           </View>
-        ) : (
-          <>
-            {/* TODAY GROUP */}
-            {todayActivities.length > 0 && (
-              <View style={styles.groupSection}>
-                <ThemedText type="caption" style={styles.groupLabel}>
-                  TODAY
-                </ThemedText>
-                {todayActivities.map((act) => (
-                  <ActivityItem
-                    key={act.id}
-                    activity={act}
-                    onPress={handleActivityPress}
-                  />
-                ))}
-              </View>
-            )}
+        ) : null}
 
-            {/* YESTERDAY GROUP */}
-            {yesterdayActivities.length > 0 && (
-              <View style={styles.groupSection}>
-                <ThemedText type="caption" style={styles.groupLabel}>
-                  YESTERDAY
-                </ThemedText>
-                {yesterdayActivities.map((act) => (
-                  <ActivityItem
-                    key={act.id}
-                    activity={act}
-                    onPress={handleActivityPress}
-                  />
-                ))}
-              </View>
-            )}
-
-            {/* EARLIER GROUP */}
-            {earlierActivities.length > 0 && (
-              <View style={styles.groupSection}>
-                <ThemedText type="caption" style={styles.groupLabel}>
-                  EARLIER
-                </ThemedText>
-                {earlierActivities.map((act) => (
-                  <ActivityItem
-                    key={act.id}
-                    activity={act}
-                    onPress={handleActivityPress}
-                  />
-                ))}
-              </View>
-            )}
-          </>
-        )}
+        {/* Timeline Activities List */}
+        <View style={styles.timelineList}>
+          {displayList.map((act) => (
+            <ActivityTimelineCard
+              key={act.id}
+              activity={act}
+              onPress={handleActivityPress}
+            />
+          ))}
+        </View>
       </ScrollView>
     </View>
   );
@@ -220,47 +248,65 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 8,
   },
-  header: {
-    marginBottom: 20,
-  },
-  headerTitle: {
-    fontSize: 32,
-    lineHeight: 38,
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    color: '#8E8D94',
-    fontSize: 14,
-  },
-  emptyBox: {
-    borderRadius: 22,
-    borderWidth: 1,
-    padding: 32,
+  dateSummaryRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
+    justifyContent: 'space-between',
+    marginBottom: 14,
+    marginTop: 4,
   },
-  emptyTitle: {
-    fontSize: 17,
-    marginBottom: 4,
-    textAlign: 'center',
+  dateNumberCol: {
+    flex: 1,
   },
-  emptySubtitle: {
-    color: '#8E8D94',
-    textAlign: 'center',
-    maxWidth: 240,
-    lineHeight: 20,
-  },
-  groupSection: {
-    marginBottom: 16,
-  },
-  groupLabel: {
+  dateSubLabel: {
+    fontSize: 11,
     fontFamily: 'Poppins_600SemiBold',
     color: '#8E8D94',
-    fontSize: 11,
     letterSpacing: 0.6,
-    marginBottom: 10,
+    marginBottom: 2,
+  },
+  dateTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  dateNumberText: {
+    fontSize: 34,
+    lineHeight: 38,
+    fontFamily: 'Poppins_700Bold',
+  },
+  dayMetaCol: {
+    justifyContent: 'center',
+  },
+  dayNameText: {
+    fontSize: 16,
+    lineHeight: 20,
+    fontFamily: 'Poppins_600SemiBold',
+  },
+  viewAllPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 100,
+  },
+  viewAllText: {
+    fontSize: 12,
+    fontFamily: 'Poppins_600SemiBold',
+  },
+  emptyNoticeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 14,
+    paddingHorizontal: 4,
+  },
+  emptyNoticeText: {
+    fontSize: 12,
+    fontFamily: 'Poppins_400Regular',
+    color: '#8E8D94',
+  },
+  timelineList: {
+    marginTop: 4,
   },
 });

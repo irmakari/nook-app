@@ -143,41 +143,6 @@ export default function HomeScreen() {
               onPress={() => handleOpenSpace(space.id)}
             />
           ))}
-
-          {/* Editorial "Create a new space" Action Card */}
-          <Pressable
-            onPress={handleNavigateCreate}
-            style={({ pressed }) => [
-              styles.newSpaceCard,
-              {
-                backgroundColor: pressed
-                  ? isDark
-                    ? '#1A1A1E'
-                    : '#F5F2EB'
-                  : 'transparent',
-                borderColor: isDark ? '#2B2B33' : '#E5E1D8',
-              },
-            ]}>
-            <View
-              style={[
-                styles.newSpaceIconBox,
-                { backgroundColor: isDark ? '#202026' : '#F0ECE4' },
-              ]}>
-              <Ionicons
-                name="add"
-                size={20}
-                color={isDark ? '#D4D4D8' : '#71717A'}
-              />
-            </View>
-            <View style={styles.newSpaceTextWrapper}>
-              <ThemedText type="body" weight="semiBold" style={styles.newSpaceTitle}>
-                Create a new space
-              </ThemedText>
-              <ThemedText type="caption" style={styles.newSpaceSubtitle}>
-                Add friends, partner, roommates or a trip group
-              </ThemedText>
-            </View>
-          </Pressable>
         </View>
       </ScrollView>
     </View>
