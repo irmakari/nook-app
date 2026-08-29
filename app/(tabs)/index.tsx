@@ -1,98 +1,272 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  StyleSheet,
+  View,
+  ScrollView,
+  Pressable,
+  Platform,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
+import { Ionicons } from '@expo/vector-icons';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { SpaceCard } from '@/components/SpaceCard';
+import { Space, spaceService } from '@/services/space-service';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const [spaces, setSpaces] = useState<Space[]>([]);
+
+  useEffect(() => {
+    // Load spaces from service layer
+    const loadSpaces = async () => {
+      const loaded = await spaceService.getSpaces();
+      setSpaces(loaded);
+    };
+
+    loadSpaces();
+
+    // Subscribe to updates from create space flow
+    const unsubscribe = spaceService.subscribe(() => {
+      loadSpaces();
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  const handleNavigateCreate = () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    router.push('/create-space');
+  };
+
+  const handleOpenSpace = (spaceId: string) => {
+    router.push({
+      pathname: '/space/[id]',
+      params: { id: spaceId },
+    });
+  };
+
+  return (
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: isDark ? '#121214' : '#FAF8F5',
+          paddingTop: Math.max(insets.top, 20),
+        },
+      ]}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: Math.max(insets.bottom + 32, 48) },
+        ]}>
+        {/* Top Greeting & Create Header */}
+        <View style={styles.header}>
+          <View style={styles.greetingWrapper}>
+            <ThemedText type="hero" style={styles.greetingText}>
+              {getGreeting()}, {spaceService.getCurrentUser().name}.
+            </ThemedText>
+            <ThemedText type="muted" style={styles.subGreeting}>
+              A private place for every part of your life.
+            </ThemedText>
+          </View>
+
+          <Pressable
+            onPress={handleNavigateCreate}
+            style={({ pressed }) => [
+              styles.headerPlusButton,
+              {
+                backgroundColor: pressed
+                  ? isDark
+                    ? '#2C2C34'
+                    : '#EAE6DF'
+                  : isDark
+                  ? '#1C1C20'
+                  : '#FFFFFF',
+                borderColor: isDark ? '#2B2B33' : '#EBE7E0',
+              },
+            ]}>
+            <Ionicons
+              name="add"
+              size={22}
+              color={isDark ? '#F4F4F5' : '#18181B'}
+            />
+          </Pressable>
+        </View>
+
+        {/* Section Heading & Space Count */}
+        <View style={styles.sectionHeader}>
+          <ThemedText type="section" style={styles.sectionTitle}>
+            Your spaces
+          </ThemedText>
+          <View
+            style={[
+              styles.countPill,
+              {
+                backgroundColor: isDark ? '#1E1E24' : '#EFECE6',
+              },
+            ]}>
+            <ThemedText
+              type="caption"
+              style={{
+                color: isDark ? '#A1A1AA' : '#71717A',
+                fontFamily: 'Poppins_600SemiBold',
+              }}>
+              {spaces.length}
+            </ThemedText>
+          </View>
+        </View>
+
+        {/* Pastel Space Cards List */}
+        <View style={styles.spacesContainer}>
+          {spaces.map((space) => (
+            <SpaceCard
+              key={space.id}
+              space={space}
+              onPress={() => handleOpenSpace(space.id)}
+            />
+          ))}
+
+          {/* Editorial "Create a new space" Action Card */}
+          <Pressable
+            onPress={handleNavigateCreate}
+            style={({ pressed }) => [
+              styles.newSpaceCard,
+              {
+                backgroundColor: pressed
+                  ? isDark
+                    ? '#1A1A1E'
+                    : '#F5F2EB'
+                  : 'transparent',
+                borderColor: isDark ? '#2B2B33' : '#E5E1D8',
+              },
+            ]}>
+            <View
+              style={[
+                styles.newSpaceIconBox,
+                { backgroundColor: isDark ? '#202026' : '#F0ECE4' },
+              ]}>
+              <Ionicons
+                name="add"
+                size={20}
+                color={isDark ? '#D4D4D8' : '#71717A'}
+              />
+            </View>
+            <View style={styles.newSpaceTextWrapper}>
+              <ThemedText type="body" weight="semiBold" style={styles.newSpaceTitle}>
+                Create a new space
+              </ThemedText>
+              <ThemedText type="caption" style={styles.newSpaceSubtitle}>
+                Add friends, partner, roommates or a trip group
+              </ThemedText>
+            </View>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 26,
+  },
+  greetingWrapper: {
+    flex: 1,
+    paddingRight: 16,
+  },
+  greetingText: {
+    fontSize: 28,
+    lineHeight: 34,
+  },
+  subGreeting: {
+    marginTop: 4,
+    color: '#8E8D94',
+    fontSize: 14,
+  },
+  headerPlusButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+  },
+  sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 14,
     gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  sectionTitle: {
+    color: '#8E8D94',
+    fontSize: 12,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  countPill: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  spacesContainer: {
+    marginBottom: 20,
+  },
+  newSpaceCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    marginTop: 6,
+    marginBottom: 16,
+  },
+  newSpaceIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+  newSpaceTextWrapper: {
+    flex: 1,
+  },
+  newSpaceTitle: {
+    fontSize: 15,
+    marginBottom: 1,
+  },
+  newSpaceSubtitle: {
+    color: '#8E8D94',
   },
 });
