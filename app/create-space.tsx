@@ -440,7 +440,8 @@ export default function CreateSpaceScreen() {
           {
             backgroundColor: isDark ? '#121214' : '#FAF8F5',
             borderTopColor: isDark ? '#222227' : '#EFECE6',
-            bottom: insets.bottom,
+            bottom: 0,
+            paddingBottom: insets.bottom > 0 ? insets.bottom + 12 : 16,
           },
         ]}>
         {step < 3 ? (

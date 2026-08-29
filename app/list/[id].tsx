@@ -5,7 +5,6 @@ import {
   ScrollView,
   Pressable,
   Platform,
-  Alert,
   Modal,
   KeyboardAvoidingView,
 } from 'react-native';
@@ -17,13 +16,15 @@ import * as Haptics from 'expo-haptics';
 import { ThemedText } from '@/components/themed-text';
 import { ListItemRow } from '@/components/ListItemRow';
 import { QuickAddItem } from '@/components/QuickAddItem';
+import { ConfirmModal } from '@/components/ConfirmModal';
 import {
+  ListItem,
   SharedList,
   Space,
   SpaceMember,
   spaceService,
 } from '@/services/space-service';
-import { LIST_TEMPLATES } from '@/constants/list-templates';
+import { ListTemplate, LIST_TEMPLATES } from '@/constants/list-templates';
 import { getAccentTint } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { SpaceIcon } from '@/components/SpaceIcon';
@@ -40,6 +41,7 @@ export default function ListDetailScreen() {
   const [list, setList] = useState<SharedList | null>(null);
   const [space, setSpace] = useState<Space | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
 
   useEffect(() => {
     const loadListAndSpace = async () => {
@@ -86,10 +88,10 @@ export default function ListDetailScreen() {
   const softTint = getAccentTint(accentColor, isDark ? 0.22 : 0.14);
   const subtleBorder = getAccentTint(accentColor, isDark ? 0.35 : 0.25);
 
-  const tpl = LIST_TEMPLATES[list.template] || LIST_TEMPLATES.blank;
+  const tpl = LIST_TEMPLATES[list.template as ListTemplate] || LIST_TEMPLATES.blank;
 
-  const activeItems = list.items.filter((item) => !item.completed);
-  const completedItems = list.items.filter((item) => item.completed);
+  const activeItems = list.items.filter((item: ListItem) => !item.completed);
+  const completedItems = list.items.filter((item: ListItem) => item.completed);
 
   const handleAddItem = (text: string) => {
     spaceService.addListItem(list.id, text, CURRENT_USER);
@@ -113,24 +115,15 @@ export default function ListDetailScreen() {
 
   const handleDeleteList = () => {
     setMenuVisible(false);
-    const confirmDelete = () => {
-      spaceService.deleteList(list.id);
-      router.back();
-    };
+    setTimeout(() => {
+      setConfirmDeleteVisible(true);
+    }, 150);
+  };
 
-    if (Platform.OS === 'web') {
-      if (window.confirm('Are you sure you want to delete this list?')) {
-        confirmDelete();
-      }
-    } else {
-      Alert.alert(
-        'Delete List',
-        'Are you sure you want to delete this list?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Delete', style: 'destructive', onPress: confirmDelete },
-        ]
-      );
+  const handleConfirmDeleteList = async () => {
+    if (list) {
+      await spaceService.deleteList(list.id);
+      router.back();
     }
   };
 
@@ -299,7 +292,7 @@ export default function ListDetailScreen() {
                   </ThemedText>
                 )}
 
-                {activeItems.map((item) => (
+                {activeItems.map((item: ListItem) => (
                   <ListItemRow
                     key={item.id}
                     item={item}
@@ -319,7 +312,7 @@ export default function ListDetailScreen() {
                     {tpl.completedLabel.toUpperCase()} ({completedItems.length})
                   </ThemedText>
 
-                  {completedItems.map((item) => (
+                  {completedItems.map((item: ListItem) => (
                     <ListItemRow
                       key={item.id}
                       item={item}
@@ -417,6 +410,20 @@ export default function ListDetailScreen() {
             </View>
           </View>
         </Modal>
+
+        {/* Custom Delete List Confirm Modal */}
+        <ConfirmModal
+          visible={confirmDeleteVisible}
+          title="Delete List"
+          message="Are you sure you want to delete this list? All items will be removed."
+          confirmText="Delete"
+          cancelText="Cancel"
+          isDestructive={true}
+          accentColor={space?.accentColor || '#7FB9E6'}
+          icon="trash-outline"
+          onConfirm={handleConfirmDeleteList}
+          onCancel={() => setConfirmDeleteVisible(false)}
+        />
       </View>
     </KeyboardAvoidingView>
   );

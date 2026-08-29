@@ -5,7 +5,6 @@ import {
   ScrollView,
   Pressable,
   Platform,
-  Alert,
   Modal,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -18,6 +17,7 @@ import { Note, Space, spaceService } from '@/services/space-service';
 import { getAccentTint } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { SpaceIcon } from '@/components/SpaceIcon';
+import { ConfirmModal } from '@/components/ConfirmModal';
 
 const formatDetailedTime = (isoString: string) => {
   const date = new Date(isoString);
@@ -51,6 +51,7 @@ export default function NoteDetailScreen() {
   const [note, setNote] = useState<Note | null>(null);
   const [space, setSpace] = useState<Space | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
 
   useEffect(() => {
     const loadNoteAndSpace = async () => {
@@ -114,24 +115,15 @@ export default function NoteDetailScreen() {
 
   const handleDeleteNote = () => {
     setMenuVisible(false);
-    const confirmDelete = async () => {
+    setTimeout(() => {
+      setConfirmDeleteVisible(true);
+    }, 150);
+  };
+
+  const handleConfirmDeleteNote = async () => {
+    if (note) {
       await spaceService.deleteNote(note.id);
       router.back();
-    };
-
-    if (Platform.OS === 'web') {
-      if (window.confirm('Are you sure you want to delete this note?')) {
-        confirmDelete();
-      }
-    } else {
-      Alert.alert(
-        'Delete Note',
-        'Are you sure you want to delete this note?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Delete', style: 'destructive', onPress: confirmDelete },
-        ]
-      );
     }
   };
 
@@ -359,6 +351,20 @@ export default function NoteDetailScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Custom Delete Note Confirm Modal */}
+      <ConfirmModal
+        visible={confirmDeleteVisible}
+        title="Delete Note"
+        message="Are you sure you want to delete this note? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDestructive={true}
+        accentColor={space?.accentColor || '#7FB9E6'}
+        icon="trash-outline"
+        onConfirm={handleConfirmDeleteNote}
+        onCancel={() => setConfirmDeleteVisible(false)}
+      />
     </View>
   );
 }

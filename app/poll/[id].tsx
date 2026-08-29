@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
   ScrollView,
   Pressable,
   Platform,
-  Alert,
   Modal,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -16,6 +15,7 @@ import * as Haptics from 'expo-haptics';
 import { ThemedText } from '@/components/themed-text';
 import { PollOptionCard } from '@/components/PollOptionCard';
 import { PollAddOptionModal } from '@/components/PollAddOptionModal';
+import { ConfirmModal } from '@/components/ConfirmModal';
 import {
   Poll,
   Space,
@@ -39,6 +39,7 @@ export default function PollDetailScreen() {
   const [space, setSpace] = useState<Space | null>(null);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [menuModalVisible, setMenuModalVisible] = useState(false);
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
 
   useEffect(() => {
     const loadPollAndSpace = async () => {
@@ -108,26 +109,17 @@ export default function PollDetailScreen() {
     await spaceService.closePoll(poll.id);
   };
 
-  const handleDeletePoll = async () => {
+  const handleDeletePoll = () => {
     setMenuModalVisible(false);
-    const confirmDelete = () => {
-      spaceService.deletePoll(poll.id);
-      router.back();
-    };
+    setTimeout(() => {
+      setConfirmDeleteVisible(true);
+    }, 150);
+  };
 
-    if (Platform.OS === 'web') {
-      if (window.confirm('Are you sure you want to delete this poll?')) {
-        confirmDelete();
-      }
-    } else {
-      Alert.alert(
-        'Delete Poll',
-        'Are you sure you want to delete this poll?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Delete', style: 'destructive', onPress: confirmDelete },
-        ]
-      );
+  const handleConfirmDeletePoll = async () => {
+    if (poll) {
+      await spaceService.deletePoll(poll.id);
+      router.back();
     }
   };
 
@@ -263,6 +255,25 @@ export default function PollDetailScreen() {
         <ThemedText type="hero" style={styles.questionTitle}>
           {poll.question}
         </ThemedText>
+
+        {/* Creator Info */}
+        <View style={styles.creatorRow}>
+          <View style={[styles.creatorAvatar, { backgroundColor: softTint }]}>
+            <ThemedText
+              style={[
+                styles.creatorInitials,
+                { color: isDark ? '#F4F4F5' : '#18181B' },
+              ]}>
+              {poll.createdBy ? poll.createdBy.slice(0, 2).toUpperCase() : 'IR'}
+            </ThemedText>
+          </View>
+          <ThemedText style={styles.creatorText}>
+            Created by{' '}
+            <ThemedText style={styles.creatorName}>
+              {poll.createdBy || 'Irmak'}
+            </ThemedText>
+          </ThemedText>
+        </View>
 
         {/* Note if exists */}
         {poll.note ? (
@@ -403,6 +414,20 @@ export default function PollDetailScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Custom Delete Poll Confirm Modal */}
+      <ConfirmModal
+        visible={confirmDeleteVisible}
+        title="Delete Poll"
+        message="Are you sure you want to delete this poll? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDestructive={true}
+        accentColor={accentColor}
+        icon="trash-outline"
+        onConfirm={handleConfirmDeletePoll}
+        onCancel={() => setConfirmDeleteVisible(false)}
+      />
     </View>
   );
 }
@@ -470,7 +495,32 @@ const styles = StyleSheet.create({
   questionTitle: {
     fontSize: 28,
     lineHeight: 34,
-    marginBottom: 6,
+    marginBottom: 4,
+  },
+  creatorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  creatorAvatar: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  creatorInitials: {
+    fontSize: 10,
+    fontFamily: 'Poppins_600SemiBold',
+  },
+  creatorText: {
+    fontSize: 13,
+    fontFamily: 'Poppins_400Regular',
+    color: '#8E8D94',
+  },
+  creatorName: {
+    fontFamily: 'Poppins_600SemiBold',
   },
   noteText: {
     color: '#8E8D94',
