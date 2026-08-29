@@ -6,7 +6,6 @@ import {
   TextInput,
   Pressable,
   Platform,
-  Alert,
   KeyboardAvoidingView,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -49,11 +48,6 @@ export default function CreateNoteScreen() {
 
   const handleSaveNote = async () => {
     if (!content.trim()) {
-      if (Platform.OS === 'web') {
-        alert('Please write some note content.');
-      } else {
-        Alert.alert('Notice', 'Please write some note content.');
-      }
       return;
     }
 
@@ -223,7 +217,8 @@ export default function CreateNoteScreen() {
             {
               backgroundColor: isDark ? '#121214' : '#FAF8F5',
               borderTopColor: isDark ? '#222227' : '#EFECE6',
-              bottom: insets.bottom,
+              bottom: 0,
+              paddingBottom: insets.bottom > 0 ? insets.bottom + 12 : 16,
             },
           ]}>
           <PrimaryButton

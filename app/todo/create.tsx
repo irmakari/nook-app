@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,7 +6,6 @@ import {
   TextInput,
   Pressable,
   Platform,
-  Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,6 +15,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { AssigneeSelector } from '@/components/AssigneeSelector';
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { ConfirmModal } from '@/components/ConfirmModal';
 import { Space, spaceService } from '@/services/space-service';
 import { getAccentTint } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -53,13 +53,11 @@ export default function CreateTodoScreen() {
   const accentColor = space?.accentColor || '#7FB9E6';
   const softTint = getAccentTint(accentColor, isDark ? 0.22 : 0.14);
 
+  const [notice, setNotice] = useState<string | null>(null);
+
   const handleCreateTask = async () => {
     if (!title.trim()) {
-      if (Platform.OS === 'web') {
-        alert('Please enter a task title.');
-      } else {
-        Alert.alert('Notice', 'Please enter a task title.');
-      }
+      setNotice('Please enter a task title.');
       return;
     }
 
@@ -229,7 +227,8 @@ export default function CreateTodoScreen() {
           {
             backgroundColor: isDark ? '#121214' : '#FAF8F5',
             borderTopColor: isDark ? '#222227' : '#EFECE6',
-            bottom: insets.bottom,
+            bottom: 0,
+            paddingBottom: insets.bottom > 0 ? insets.bottom + 12 : 16,
           },
         ]}>
         <PrimaryButton
@@ -249,7 +248,7 @@ const styles = StyleSheet.create({
   },
   headerWrapper: {
     paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingTop: 4,
   },
   scrollContent: {
     paddingHorizontal: 20,

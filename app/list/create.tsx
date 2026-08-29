@@ -5,7 +5,6 @@ import {
   ScrollView,
   TextInput,
   Platform,
-  Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -60,15 +59,6 @@ export default function CreateListScreen() {
 
   const handleCreateList = async () => {
     const finalName = name.trim() || templateConfig.defaultName;
-
-    if (!finalName) {
-      if (Platform.OS === 'web') {
-        alert('Please enter a list name.');
-      } else {
-        Alert.alert('Notice', 'Please enter a list name.');
-      }
-      return;
-    }
 
     try {
       setIsSubmitting(true);
@@ -187,7 +177,8 @@ export default function CreateListScreen() {
           {
             backgroundColor: isDark ? '#121214' : '#FAF8F5',
             borderTopColor: isDark ? '#222227' : '#EFECE6',
-            bottom: insets.bottom,
+            bottom: 0,
+            paddingBottom: insets.bottom > 0 ? insets.bottom + 12 : 16,
           },
         ]}>
         <PrimaryButton
