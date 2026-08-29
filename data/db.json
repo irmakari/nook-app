@@ -294,6 +294,7 @@
     {
       "id": "poll-1",
       "spaceId": "kankiler",
+      "planId": "plan-1",
       "question": "Where should we eat?",
       "note": "Saturday lunch after Kadıköy",
       "createdBy": "Irmak",

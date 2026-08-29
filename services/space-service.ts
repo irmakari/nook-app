@@ -149,6 +149,7 @@ export interface Plan {
   createdAt: string;
   options?: PlanOption[];
   rsvps?: PlanRSVP[];
+  allowMultiple?: boolean;
 }
 
 export interface CreatePlanPayload {
@@ -162,6 +163,7 @@ export interface CreatePlanPayload {
   endTime?: string;
   votingOptions?: { date: string; time?: string }[];
   invitedMembers: SpaceMember[];
+  allowMultiple?: boolean;
 }
 
 // POLL TYPES
@@ -178,6 +180,7 @@ export interface PollOption {
 export interface Poll {
   id: string;
   spaceId: string;
+  planId?: string;
   question: string;
   note?: string;
   createdBy: string;
@@ -398,14 +401,8 @@ class SpaceService {
     return { ...this.currentUser };
   }
 
-  // SPACES
-  public async getSpaces(): Promise<Space[]> {
-    return Promise.resolve([...this.spaces]);
-  }
-
-  public async getSpaceById(id: string): Promise<Space | undefined> {
-    const space = this.spaces.find((s) => s.id === id);
-    if (!space) return undefined;
+  private populateSpace(space: Space): Space {
+    const id = space.id;
 
     // Attach latest primary plan if exists
     const spacePlans = this.plans.filter((p) => p.spaceId === id);
@@ -435,10 +432,17 @@ class SpaceService {
           status: 'voting',
         };
       }
+    } else {
+      delete space.upcomingPlan;
     }
 
     // Dynamic membership count
     space.memberCount = space.members.length;
+
+    // Update sectionMeta Plans count dynamically
+    if (space.sectionMeta && space.sections?.includes('Plans')) {
+      space.sectionMeta['Plans'] = `${spacePlans.length} upcoming`;
+    }
 
     // Update sectionMeta Polls count
     const spacePolls = this.polls.filter((p) => p.spaceId === id && !p.isClosed);
@@ -472,7 +476,19 @@ class SpaceService {
       space.sectionMeta['Notes'] = `${spaceNotes.length} ${spaceNotes.length === 1 ? 'note' : 'notes'}`;
     }
 
-    return Promise.resolve({ ...space });
+    return space;
+  }
+
+  // SPACES
+  public async getSpaces(): Promise<Space[]> {
+    const populated = this.spaces.map((s) => this.populateSpace(s));
+    return Promise.resolve(populated);
+  }
+
+  public async getSpaceById(id: string): Promise<Space | undefined> {
+    const space = this.spaces.find((s) => s.id === id);
+    if (!space) return undefined;
+    return Promise.resolve({ ...this.populateSpace(space) });
   }
 
   public async createSpace(payload: CreateSpacePayload): Promise<Space> {
@@ -515,6 +531,22 @@ class SpaceService {
 
     this.notify();
     return Promise.resolve(newSpace);
+  }
+
+  public async updateSpace(id: string, updates: Partial<Space>): Promise<Space | undefined> {
+    const space = this.spaces.find((s) => s.id === id);
+    if (!space) return undefined;
+
+    Object.assign(space, updates);
+    this.notify();
+    return Promise.resolve({ ...space });
+  }
+
+  public async deleteSpace(id: string): Promise<boolean> {
+    const initialLen = this.spaces.length;
+    this.spaces = this.spaces.filter((s) => s.id !== id);
+    this.notify();
+    return Promise.resolve(this.spaces.length < initialLen);
   }
 
   // SPACE MEMBERS
@@ -659,6 +691,7 @@ class SpaceService {
       createdAt: new Date().toISOString(),
       options,
       rsvps,
+      allowMultiple: payload.allowMultiple,
     };
 
     this.plans = [newPlan, ...this.plans];
@@ -687,6 +720,8 @@ class SpaceService {
     const plan = this.plans.find((p) => p.id === planId);
     if (!plan || !plan.options) return undefined;
 
+    const hasVotedThisOption = plan.options.find((o) => o.id === optionId)?.voterIds.includes(user.name);
+
     plan.options = plan.options.map((opt) => {
       if (opt.id === optionId) {
         const hasVoted = opt.voterIds.includes(user.name);
@@ -700,6 +735,13 @@ class SpaceService {
           ...opt,
           voterIds: newVoterIds,
           voters: newVoters,
+        };
+      } else if (plan.allowMultiple === false && !hasVotedThisOption) {
+        // Clear votes from other options if single choice is enforced
+        return {
+          ...opt,
+          voterIds: opt.voterIds.filter((id) => id !== user.name),
+          voters: opt.voters.filter((v) => v.name !== user.name),
         };
       }
       return opt;
@@ -761,12 +803,23 @@ class SpaceService {
     return Promise.resolve({ ...plan });
   }
 
+  public async deletePlan(id: string): Promise<boolean> {
+    const initialLen = this.plans.length;
+    this.plans = this.plans.filter((p) => p.id !== id);
+    this.notify();
+    return Promise.resolve(this.plans.length < initialLen);
+  }
+
   // POLLS
   public async getPolls(spaceId?: string): Promise<Poll[]> {
     if (spaceId) {
       return Promise.resolve(this.polls.filter((p) => p.spaceId === spaceId));
     }
     return Promise.resolve([...this.polls]);
+  }
+
+  public async getPollsByPlanId(planId: string): Promise<Poll[]> {
+    return Promise.resolve(this.polls.filter((p) => p.planId === planId));
   }
 
   public async getPollById(id: string): Promise<Poll | undefined> {
