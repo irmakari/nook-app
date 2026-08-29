@@ -1,176 +1,84 @@
 import React from 'react';
 import { View, Pressable, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
 
 import { SpaceCardProps } from './types';
 import { styles } from './styles';
 import { ThemedText } from '@/components/themed-text';
-import { AvatarStack } from '@/components/AvatarStack';
-import { getReadableTextColor } from '@/constants/theme';
 import { SpaceIcon } from '@/components/SpaceIcon';
-
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+import { getAccentTint } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export function SpaceCard({ space, onPress }: SpaceCardProps) {
-  const scale = useSharedValue(1);
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  const accentColor = space.accentColor || '#7FB9E6';
+  
+  // Soft, refined pastel surface for the card
+  const cardBg = isDark
+    ? getAccentTint(accentColor, 0.22)
+    : getAccentTint(accentColor, 0.38);
 
-  const handlePressIn = () => {
-    scale.value = withSpring(0.975, { damping: 15, stiffness: 300 });
-  };
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
-  };
+  const iconBoxBg = isDark
+    ? getAccentTint(accentColor, 0.45)
+    : getAccentTint(accentColor, 0.65);
 
   const handlePress = () => {
     if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      Haptics.selectionAsync();
     }
-    onPress?.();
+    onPress?.(space);
   };
 
-  const accentColor = space.accentColor || '#7FB9E6';
-  const textColor = getReadableTextColor(accentColor);
-  const isDarkText = textColor === '#18181B';
-
-  const secondaryTextColor = isDarkText
-    ? 'rgba(24, 24, 27, 0.65)'
-    : 'rgba(255, 255, 255, 0.75)';
-
-  const translucentOverlay = isDarkText
-    ? 'rgba(255, 255, 255, 0.42)'
-    : 'rgba(0, 0, 0, 0.16)';
-
-  const translucentBorder = isDarkText
-    ? 'rgba(255, 255, 255, 0.65)'
-    : 'rgba(255, 255, 255, 0.25)';
+  const planTitle = space.upcomingPlan?.title;
+  const recentAction = space.recentActivity;
+  const timeText = space.recentActivityTime || 'Recently';
 
   return (
-    <AnimatedPressable
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
+    <Pressable
       onPress={handlePress}
-      style={[
+      style={({ pressed }) => [
         styles.card,
         {
-          backgroundColor: accentColor,
-          borderColor: isDarkText ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.18)',
-          shadowColor: accentColor,
+          backgroundColor: cardBg,
+          transform: [{ scale: pressed ? 0.985 : 1 }],
         },
-        animatedStyle,
       ]}>
-      {/* Top Row: Identity Icon, Name & Member Count Badge */}
-      <View style={styles.topRow}>
-        <View style={styles.identityGroup}>
-          <View
-            style={[
-              styles.iconBox,
-              {
-                backgroundColor: translucentOverlay,
-                borderColor: translucentBorder,
-              },
-            ]}>
-            <SpaceIcon name={space.icon} size={20} color={textColor} />
-          </View>
-          <View style={styles.titleWrapper}>
-            <ThemedText
-              type="cardTitle"
-              style={[styles.spaceName, { color: textColor }]}>
-              {space.name}
+      {/* Main Header Row: Icon + Space Title + Tagline + Members */}
+      <View style={styles.mainRow}>
+        <View style={[styles.iconBox, { backgroundColor: iconBoxBg }]}>
+          <SpaceIcon name={space.icon} size={20} color="#111111" />
+        </View>
+
+        <View style={styles.infoCol}>
+          <View style={styles.titleRow}>
+            <ThemedText style={styles.spaceName}>{space.name}</ThemedText>
+            <ThemedText style={styles.memberText}>
+              {space.memberCount} {space.memberCount === 1 ? 'person' : 'people'}
             </ThemedText>
-            {space.tagline ? (
-              <ThemedText
-                type="caption"
-                style={[styles.tagline, { color: secondaryTextColor }]}
-                numberOfLines={1}>
-                {space.tagline}
-              </ThemedText>
-            ) : null}
           </View>
-        </View>
 
-        <View
-          style={[
-            styles.memberBadge,
-            {
-              backgroundColor: translucentOverlay,
-              borderColor: translucentBorder,
-            },
-          ]}>
-          <ThemedText
-            style={[styles.memberBadgeText, { color: textColor }]}>
-            {space.memberCount} {space.memberCount === 1 ? 'member' : 'members'}
-          </ThemedText>
-        </View>
-      </View>
-
-      {/* Activity / Vibe Preview Box */}
-      {space.recentActivity ? (
-        <View
-          style={[
-            styles.previewBox,
-            {
-              backgroundColor: translucentOverlay,
-              borderColor: translucentBorder,
-            },
-          ]}>
-          <View
-            style={[
-              styles.accentDot,
-              { backgroundColor: textColor, opacity: 0.5 },
-            ]}
-          />
-          <ThemedText
-            style={[styles.activityText, { color: textColor }]}
-            numberOfLines={1}>
-            {space.recentActivity}
-          </ThemedText>
-        </View>
-      ) : null}
-
-      {/* Bottom Row: Avatar Stack + Enter Indicator */}
-      <View style={styles.bottomRow}>
-        <AvatarStack
-          members={space.members}
-          max={3}
-          size={26}
-          ringColor={accentColor}
-        />
-
-        <View style={styles.metaGroup}>
-          {space.recentActivityTime ? (
-            <ThemedText
-              type="caption"
-              style={[styles.activityTime, { color: secondaryTextColor }]}>
-              {space.recentActivityTime}
+          {space.tagline ? (
+            <ThemedText numberOfLines={1} style={styles.tagline}>
+              {space.tagline}
             </ThemedText>
           ) : null}
-          <View
-            style={[
-              styles.enterCircle,
-              {
-                backgroundColor: translucentOverlay,
-                borderColor: translucentBorder,
-              },
-            ]}>
-            <Ionicons
-              name="arrow-forward"
-              size={13}
-              color={textColor}
-            />
-          </View>
         </View>
       </View>
-    </AnimatedPressable>
+
+      {/* Context Footer (Upcoming Plan or Recent Activity) */}
+      {(planTitle || recentAction) ? (
+        <View style={styles.contextFooter}>
+          <View style={styles.contextLeft}>
+            <View style={styles.contextDot} />
+            <ThemedText numberOfLines={1} style={styles.contextText}>
+              {planTitle || recentAction}
+            </ThemedText>
+          </View>
+          <ThemedText style={styles.timeText}>{timeText}</ThemedText>
+        </View>
+      ) : null}
+    </Pressable>
   );
 }

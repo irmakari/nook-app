@@ -1,5 +1,4 @@
-import React from 'react';
-import { View, Pressable, Platform, Alert } from 'react-native';
+import { View, Pressable, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
@@ -24,24 +23,9 @@ export function MemberRow({
 
   const handleRemove = () => {
     if (Platform.OS !== 'web') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      Haptics.selectionAsync();
     }
-    const confirm = () => onRemove?.(member.name);
-
-    if (Platform.OS === 'web') {
-      if (window.confirm(`Remove ${member.name} from this Space?`)) {
-        confirm();
-      }
-    } else {
-      Alert.alert(
-        'Remove Member',
-        `Remove ${member.name} from this Space?`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Remove', style: 'destructive', onPress: confirm },
-        ]
-      );
-    }
+    onRemove?.(member.name);
   };
 
   return (

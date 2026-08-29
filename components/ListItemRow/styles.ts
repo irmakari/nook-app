@@ -31,10 +31,14 @@ export const styles = StyleSheet.create({
     color: '#8E8D94',
     textDecorationLine: 'line-through',
   },
-  noteText: {
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  metaText: {
     color: '#8E8D94',
     fontSize: 12,
-    marginTop: 2,
   },
   deleteBtn: {
     padding: 6,

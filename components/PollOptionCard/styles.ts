@@ -24,7 +24,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 8,
     zIndex: 2,
   },
   titleGroup: {
@@ -58,6 +58,13 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1.5,
   },
+  voterNamesText: {
+    fontSize: 12,
+    fontFamily: 'Poppins_400Regular',
+    color: '#8E8D94',
+    marginBottom: 10,
+    zIndex: 2,
+  },
   bottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -73,5 +80,9 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Poppins_600SemiBold',
     color: '#8E8D94',
+  },
+  percentageText: {
+    fontSize: 13,
+    fontFamily: 'Poppins_700Bold',
   },
 });

@@ -78,9 +78,12 @@ export function ListItemRow({
           {item.text}
         </ThemedText>
 
-        {item.note ? (
-          <ThemedText style={styles.noteText}>{item.note}</ThemedText>
-        ) : null}
+        <View style={styles.metaRow}>
+          <ThemedText style={styles.metaText}>by {item.createdBy}</ThemedText>
+          {item.note ? (
+            <ThemedText style={styles.metaText}> • {item.note}</ThemedText>
+          ) : null}
+        </View>
       </View>
 
       {/* Delete trigger */}

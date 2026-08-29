@@ -15,7 +15,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   dateTimeBox: {
     flexDirection: 'row',
@@ -35,10 +35,16 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1.5,
   },
+  voterNamesText: {
+    fontSize: 12,
+    fontFamily: 'Poppins_400Regular',
+    color: '#8E8D94',
+    marginBottom: 10,
+  },
   divider: {
     height: 1,
     width: '100%',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   bottomRow: {
     flexDirection: 'row',
@@ -56,9 +62,9 @@ export const styles = StyleSheet.create({
     color: '#8E8D94',
   },
   finalizeLink: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
   },
   finalizeLinkText: {
     fontSize: 11,
