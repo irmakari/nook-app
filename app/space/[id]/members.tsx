@@ -21,6 +21,7 @@ import {
   User,
   spaceService,
 } from '@/services/space-service';
+import { SpaceIcon } from '@/components/SpaceIcon';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function SpaceMembersScreen() {
@@ -128,9 +129,13 @@ export default function SpaceMembersScreen() {
 
         <View style={styles.navSpaceBadge}>
           {space.icon && (
-            <ThemedText style={{ fontSize: 13, marginRight: 4 }}>
-              {space.icon}
-            </ThemedText>
+            <View style={{ marginRight: 6 }}>
+              <SpaceIcon
+                name={space.icon}
+                size={14}
+                color={isDark ? '#F4F4F5' : '#18181B'}
+              />
+            </View>
           )}
           <ThemedText
             type="caption"

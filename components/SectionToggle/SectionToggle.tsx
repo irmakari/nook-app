@@ -7,6 +7,7 @@ import { styles } from './styles';
 import { ThemedText } from '@/components/themed-text';
 import { getAccentTint } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { SpaceIcon } from '@/components/SpaceIcon';
 
 export function SectionToggle({
   name,
@@ -48,7 +49,7 @@ export function SectionToggle({
               : '#F5F2EC',
           },
         ]}>
-        <ThemedText style={styles.iconEmoji}>{icon}</ThemedText>
+        <SpaceIcon name={icon} size={20} color={isDark ? '#F4F4F5' : '#18181B'} />
       </View>
 
       <View style={styles.textContainer}>

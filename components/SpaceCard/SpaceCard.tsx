@@ -13,6 +13,7 @@ import { styles } from './styles';
 import { ThemedText } from '@/components/themed-text';
 import { AvatarStack } from '@/components/AvatarStack';
 import { getReadableTextColor } from '@/constants/theme';
+import { SpaceIcon } from '@/components/SpaceIcon';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -79,7 +80,7 @@ export function SpaceCard({ space, onPress }: SpaceCardProps) {
                 borderColor: translucentBorder,
               },
             ]}>
-            <ThemedText style={styles.iconEmoji}>{space.icon}</ThemedText>
+            <SpaceIcon name={space.icon} size={20} color={textColor} />
           </View>
           <View style={styles.titleWrapper}>
             <ThemedText

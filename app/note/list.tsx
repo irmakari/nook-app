@@ -16,6 +16,7 @@ import { NoteCard } from '@/components/NoteCard';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Note, Space, spaceService } from '@/services/space-service';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { SpaceIcon } from '@/components/SpaceIcon';
 
 export default function NotesListScreen() {
   const insets = useSafeAreaInsets();
@@ -123,9 +124,13 @@ export default function NotesListScreen() {
 
         <View style={styles.navSpaceBadge}>
           {space.icon && (
-            <ThemedText style={{ fontSize: 13, marginRight: 4 }}>
-              {space.icon}
-            </ThemedText>
+            <View style={{ marginRight: 6 }}>
+              <SpaceIcon
+                name={space.icon}
+                size={14}
+                color={isDark ? '#F4F4F5' : '#18181B'}
+              />
+            </View>
           )}
           <ThemedText
             type="caption"

@@ -9,6 +9,7 @@ import { styles } from './styles';
 import { ThemedText } from '@/components/themed-text';
 import { AvatarStack } from '@/components/AvatarStack';
 import { getReadableTextColor } from '@/constants/theme';
+import { SpaceIcon } from '@/components/SpaceIcon';
 
 export function SpaceHero({
   space,
@@ -103,7 +104,7 @@ export function SpaceHero({
                 borderColor: translucentBorder,
               },
             ]}>
-            <ThemedText style={styles.iconEmoji}>{space.icon}</ThemedText>
+            <SpaceIcon name={space.icon} size={22} color={textColor} />
           </View>
           <ThemedText
             type="hero"

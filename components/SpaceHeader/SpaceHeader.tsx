@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Pressable, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
@@ -9,6 +10,7 @@ import { ThemedText } from '@/components/themed-text';
 import { AvatarStack } from '@/components/AvatarStack';
 import { getAccentTint } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { SpaceIcon } from '@/components/SpaceIcon';
 
 export function SpaceHeader({
   space,
@@ -16,6 +18,7 @@ export function SpaceHeader({
   onOptionsPress,
   onMembersPress,
 }: SpaceHeaderProps) {
+  const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
@@ -23,22 +26,36 @@ export function SpaceHeader({
   const softTint = getAccentTint(accentColor, isDark ? 0.22 : 0.15);
 
   const handleBack = () => {
-    if (Platform.OS !== 'web') Haptics.selectionAsync();
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync();
+    }
     onBackPress();
   };
 
   const handleOptions = () => {
-    if (Platform.OS !== 'web') Haptics.selectionAsync();
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync();
+    }
     onOptionsPress?.();
   };
 
   const handleMembers = () => {
-    if (Platform.OS !== 'web') Haptics.selectionAsync();
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync();
+    }
     onMembersPress?.();
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: isDark ? '#121214' : '#FAF8F5',
+          paddingTop: Math.max(insets.top, 20),
+          borderBottomColor: isDark ? '#26262B' : '#EFECE6',
+        },
+      ]}>
       {/* Top Nav Row: Back + Options */}
       <View style={styles.topNavRow}>
         <Pressable
@@ -81,7 +98,7 @@ export function SpaceHeader({
           <Ionicons
             name="ellipsis-horizontal"
             size={18}
-            color={isDark ? '#A1A1AA' : '#71717A'}
+            color={isDark ? '#F4F4F5' : '#18181B'}
           />
         </Pressable>
       </View>
@@ -97,7 +114,7 @@ export function SpaceHeader({
                 borderColor: accentColor,
               },
             ]}>
-            <ThemedText style={styles.iconEmoji}>{space.icon}</ThemedText>
+            <SpaceIcon name={space.icon} size={22} color={accentColor} />
           </View>
           <View style={styles.nameWrapper}>
             <ThemedText type="title" style={styles.spaceName} numberOfLines={1}>

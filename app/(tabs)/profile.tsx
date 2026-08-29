@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { EditProfileModal } from '@/components/EditProfileModal';
 import { Space, User, spaceService } from '@/services/space-service';
+import { SpaceIcon } from '@/components/SpaceIcon';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function ProfileScreen() {
@@ -168,13 +169,13 @@ export default function ProfileScreen() {
                     borderColor: isDark ? '#26262B' : '#EFECE6',
                   },
                 ]}>
-                <View
-                  style={[
-                    styles.spaceDot,
-                    { backgroundColor: space.accentColor || '#7FB9E6' },
-                  ]}
-                />
-                <ThemedText style={styles.spaceEmoji}>{space.icon}</ThemedText>
+                <View style={{ marginRight: 10 }}>
+                  <SpaceIcon
+                    name={space.icon}
+                    size={18}
+                    color={space.accentColor || '#7FB9E6'}
+                  />
+                </View>
                 <ThemedText style={styles.spaceName}>{space.name}</ThemedText>
 
                 <ThemedText style={styles.spaceMembers}>

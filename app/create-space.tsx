@@ -21,6 +21,8 @@ import { nookSpaceColors, getAccentTint } from '@/constants/theme';
 import { spaceService } from '@/services/space-service';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
+import { SpaceIcon } from '@/components/SpaceIcon';
+
 interface SpaceOptionData {
   type: SpaceType;
   icon: string;
@@ -34,7 +36,7 @@ interface SpaceOptionData {
 const SPACE_OPTIONS: SpaceOptionData[] = [
   {
     type: 'friends',
-    icon: '👯',
+    icon: 'people',
     title: 'Friends',
     description: 'Plans, lists & chaos',
     defaultName: 'Kankiler',
@@ -43,7 +45,7 @@ const SPACE_OPTIONS: SpaceOptionData[] = [
   },
   {
     type: 'home',
-    icon: '🏠',
+    icon: 'home',
     title: 'Home',
     description: 'Family or roommates',
     defaultName: 'Ev',
@@ -52,7 +54,7 @@ const SPACE_OPTIONS: SpaceOptionData[] = [
   },
   {
     type: 'partner',
-    icon: '💘',
+    icon: 'heart',
     title: 'Partner',
     description: 'For you two',
     defaultName: 'Manita',
@@ -61,7 +63,7 @@ const SPACE_OPTIONS: SpaceOptionData[] = [
   },
   {
     type: 'trip',
-    icon: '🌊',
+    icon: 'airplane',
     title: 'Trip',
     description: 'Plan something together',
     defaultName: 'Yaz Tatili',
@@ -70,7 +72,7 @@ const SPACE_OPTIONS: SpaceOptionData[] = [
   },
   {
     type: 'blank',
-    icon: '✨',
+    icon: 'sparkles',
     title: 'Blank',
     description: 'Start from scratch',
     defaultName: 'My Space',
@@ -82,37 +84,50 @@ const SPACE_OPTIONS: SpaceOptionData[] = [
 const AVAILABLE_SECTIONS = [
   {
     name: 'Plans',
-    icon: '🗓️',
+    icon: 'calendar-outline',
     description: 'Events, meetups, dates & group calendar',
   },
   {
     name: 'Polls',
-    icon: '📊',
+    icon: 'bar-chart-outline',
     description: 'Decide what to do, where to eat & vote',
   },
   {
     name: 'Shared Lists',
-    icon: '📝',
+    icon: 'list-outline',
     description: 'Shared wishlists, packing, recommendations',
   },
   {
     name: 'To-do',
-    icon: '✅',
+    icon: 'checkbox-outline',
     description: 'Tasks, chores & shared action items',
   },
   {
     name: 'Shopping',
-    icon: '🛒',
+    icon: 'cart-outline',
     description: 'Groceries, market runs & shared orders',
   },
   {
     name: 'Notes',
-    icon: '📌',
+    icon: 'document-text-outline',
     description: 'Door codes, links, wifi info & reservations',
   },
 ];
 
-const EMOJI_PRESETS = ['👯', '🏠', '💘', '🌊', '✨', '☕', '🍸', '🎶', '🥐', '🍕', '🏄', '🪴'];
+const ICON_PRESETS = [
+  'people',
+  'home',
+  'heart',
+  'airplane',
+  'sparkles',
+  'cafe',
+  'wine',
+  'musical-notes',
+  'restaurant',
+  'pizza',
+  'fitness',
+  'leaf',
+];
 
 export default function CreateSpaceScreen() {
   const insets = useSafeAreaInsets();
@@ -126,7 +141,7 @@ export default function CreateSpaceScreen() {
   // Form state
   const [selectedType, setSelectedType] = useState<SpaceType>('friends');
   const [name, setName] = useState('Kankiler');
-  const [icon, setIcon] = useState('👯');
+  const [icon, setIcon] = useState('people');
   const [accentColor, setAccentColor] = useState<string>(nookSpaceColors.sky);
   const [selectedSections, setSelectedSections] = useState<string[]>([
     'Plans',
@@ -280,7 +295,7 @@ export default function CreateSpaceScreen() {
                     borderColor: accentColor,
                   },
                 ]}>
-                <ThemedText style={styles.previewIconEmoji}>{icon}</ThemedText>
+                <SpaceIcon name={icon} size={24} color={accentColor} />
               </View>
               <View style={styles.previewTextWrapper}>
                 <ThemedText type="cardTitle" style={styles.previewName}>
@@ -323,7 +338,7 @@ export default function CreateSpaceScreen() {
               />
             </View>
 
-            {/* Emoji / Icon Presets */}
+            {/* Icon Presets */}
             <View style={styles.inputGroup}>
               <ThemedText type="caption" style={styles.inputLabel}>
                 CHOOSE ICON
@@ -332,14 +347,14 @@ export default function CreateSpaceScreen() {
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.emojiList}>
-                {EMOJI_PRESETS.map((emoji) => {
-                  const isSelected = icon === emoji;
+                {ICON_PRESETS.map((preset) => {
+                  const isSelected = icon === preset;
                   return (
                     <Pressable
-                      key={emoji}
+                      key={preset}
                       onPress={() => {
                         if (Platform.OS !== 'web') Haptics.selectionAsync();
-                        setIcon(emoji);
+                        setIcon(preset);
                       }}
                       style={[
                         styles.emojiButton,
@@ -356,7 +371,17 @@ export default function CreateSpaceScreen() {
                             : '#EBE7E0',
                         },
                       ]}>
-                      <ThemedText style={styles.emojiText}>{emoji}</ThemedText>
+                      <SpaceIcon
+                        name={preset}
+                        size={22}
+                        color={
+                          isSelected
+                            ? accentColor
+                            : isDark
+                            ? '#A1A1AA'
+                            : '#71717A'
+                        }
+                      />
                     </Pressable>
                   );
                 })}

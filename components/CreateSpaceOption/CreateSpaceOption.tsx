@@ -1,35 +1,23 @@
 import React from 'react';
 import { View, Pressable, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
 
 import { CreateSpaceOptionProps } from './types';
 import { styles } from './styles';
 import { ThemedText } from '@/components/themed-text';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+import { SpaceIcon } from '@/components/SpaceIcon';
 
 export function CreateSpaceOption({
   type,
   icon,
   title,
   description,
-  selected,
+  selected = false,
   onSelect,
 }: CreateSpaceOptionProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-
-  const scale = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
 
   const handlePress = () => {
     if (Platform.OS !== 'web') {
@@ -39,29 +27,27 @@ export function CreateSpaceOption({
   };
 
   return (
-    <AnimatedPressable
-      onPressIn={() => (scale.value = withSpring(0.98, { damping: 15, stiffness: 300 }))}
-      onPressOut={() => (scale.value = withSpring(1, { damping: 15, stiffness: 300 }))}
+    <Pressable
       onPress={handlePress}
-      style={[
+      style={({ pressed }) => [
         styles.optionCard,
         {
           backgroundColor: selected
             ? isDark
-              ? '#222228'
+              ? '#1E1E24'
               : '#FFFFFF'
             : isDark
-            ? '#1A1A1E'
+            ? '#16161A'
             : '#FFFFFF',
           borderColor: selected
             ? isDark
-              ? '#F4F4F5'
+              ? '#52525E'
               : '#18181B'
             : isDark
             ? '#26262B'
             : '#EFECE6',
+          transform: [{ scale: pressed ? 0.985 : 1 }],
         },
-        animatedStyle,
       ]}>
       <View
         style={[
@@ -76,7 +62,7 @@ export function CreateSpaceOption({
               : '#FAF8F5',
           },
         ]}>
-        <ThemedText style={styles.iconEmoji}>{icon}</ThemedText>
+        <SpaceIcon name={icon} size={22} color={isDark ? '#F4F4F5' : '#18181B'} />
       </View>
 
       <View style={styles.textContainer}>
@@ -110,6 +96,6 @@ export function CreateSpaceOption({
           />
         ) : null}
       </View>
-    </AnimatedPressable>
+    </Pressable>
   );
 }

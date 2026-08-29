@@ -17,6 +17,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Note, Space, spaceService } from '@/services/space-service';
 import { getAccentTint } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { SpaceIcon } from '@/components/SpaceIcon';
 
 const formatDetailedTime = (isoString: string) => {
   const date = new Date(isoString);
@@ -172,9 +173,13 @@ export default function NoteDetailScreen() {
 
         <View style={styles.navSpaceBadge}>
           {space?.icon && (
-            <ThemedText style={{ fontSize: 13, marginRight: 4 }}>
-              {space.icon}
-            </ThemedText>
+            <View style={{ marginRight: 6 }}>
+              <SpaceIcon
+                name={space.icon}
+                size={14}
+                color={isDark ? '#F4F4F5' : '#18181B'}
+              />
+            </View>
           )}
           <ThemedText
             type="caption"
