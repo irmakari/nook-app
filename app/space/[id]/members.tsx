@@ -14,6 +14,7 @@ import * as Haptics from 'expo-haptics';
 import { ThemedText } from '@/components/themed-text';
 import { MemberRow } from '@/components/MemberRow';
 import { InviteMemberSheet } from '@/components/InviteMemberSheet';
+import { ConfirmModal } from '@/components/ConfirmModal';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import {
   Space,
@@ -35,6 +36,7 @@ export default function SpaceMembersScreen() {
   const [members, setMembers] = useState<SpaceMember[]>([]);
   const [currentUser, setCurrentUser] = useState<User>(spaceService.getCurrentUser());
   const [inviteVisible, setInviteVisible] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -87,8 +89,15 @@ export default function SpaceMembersScreen() {
     await spaceService.addSpaceMember(space.id, user);
   };
 
-  const handleRemoveMember = async (memberName: string) => {
-    await spaceService.removeSpaceMember(space.id, memberName);
+  const handleRemoveMember = (memberName: string) => {
+    setMemberToRemove(memberName);
+  };
+
+  const handleConfirmRemove = async () => {
+    if (memberToRemove && space) {
+      await spaceService.removeSpaceMember(space.id, memberToRemove);
+      setMemberToRemove(null);
+    }
   };
 
   return (
@@ -214,7 +223,8 @@ export default function SpaceMembersScreen() {
           {
             backgroundColor: isDark ? '#121214' : '#FAF8F5',
             borderTopColor: isDark ? '#222227' : '#EFECE6',
-            bottom: insets.bottom,
+            bottom: 0,
+            paddingBottom: insets.bottom > 0 ? insets.bottom + 12 : 16,
           },
         ]}>
         <PrimaryButton
@@ -235,6 +245,20 @@ export default function SpaceMembersScreen() {
         availableUsers={availableUsers}
         onClose={() => setInviteVisible(false)}
         onAddMember={handleAddMember}
+      />
+
+      {/* Custom Space Themed Remove Member Confirm Modal */}
+      <ConfirmModal
+        visible={!!memberToRemove}
+        title="Remove Member"
+        message={`Remove ${memberToRemove} from ${space.name}?`}
+        confirmText="Remove"
+        cancelText="Cancel"
+        isDestructive={true}
+        accentColor={accentColor}
+        icon="trash-outline"
+        onConfirm={handleConfirmRemove}
+        onCancel={() => setMemberToRemove(null)}
       />
     </View>
   );
