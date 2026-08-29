@@ -1,0 +1,654 @@
+{
+  "spaces": [
+    {
+      "id": "kankiler",
+      "name": "Kankiler",
+      "tagline": "Weekend plans & night out",
+      "icon": "👯",
+      "accentColor": "#7FB9E6",
+      "type": "friends",
+      "sections": ["Plans", "Polls", "Shared Lists"],
+      "sectionMeta": {
+        "Plans": "3 upcoming",
+        "Polls": "2 active",
+        "Shared Lists": "2 lists · 8 items"
+      },
+      "memberCount": 5,
+      "members": [
+        { "name": "Irmak", "initials": "IR" },
+        { "name": "Eren", "initials": "ER" },
+        { "name": "Bengisu", "initials": "BE" },
+        { "name": "İrem", "initials": "İR" },
+        { "name": "Mert", "initials": "ME" }
+      ],
+      "upcomingPlan": {
+        "id": "plan-1",
+        "title": "Saturday in Kadıköy",
+        "date": "Saturday · 10:00",
+        "location": "Kadıköy",
+        "goingCount": 4,
+        "maybeCount": 1,
+        "attendees": [
+          { "name": "Irmak", "initials": "IR" },
+          { "name": "Eren", "initials": "ER" },
+          { "name": "Bengisu", "initials": "BE" },
+          { "name": "İrem", "initials": "İR" }
+        ]
+      },
+      "recentActivities": [
+        {
+          "id": "act-1",
+          "user": "Ece",
+          "action": "voted on",
+          "target": "Where should we eat?",
+          "timeAgo": "12m"
+        },
+        {
+          "id": "act-2",
+          "user": "Eren",
+          "action": "added \"Basta\" to",
+          "target": "Where should we eat?",
+          "timeAgo": "38m"
+        },
+        {
+          "id": "act-3",
+          "user": "Irmak",
+          "action": "created a new plan",
+          "timeAgo": "1h"
+        }
+      ],
+      "recentActivity": "Ece voted on Where should we eat?",
+      "recentActivityTime": "12m ago"
+    },
+    {
+      "id": "ev",
+      "name": "Ev",
+      "tagline": "Apartment 4B & groceries",
+      "icon": "🏠",
+      "accentColor": "#B7C96A",
+      "type": "home",
+      "sections": ["To-do", "Shopping", "Notes"],
+      "sectionMeta": {
+        "To-do": "3 remaining",
+        "Shopping": "1 list · 4 items",
+        "Notes": "2 notes"
+      },
+      "memberCount": 3,
+      "members": [
+        { "name": "Irmak", "initials": "IR" },
+        { "name": "Efe", "initials": "EF" },
+        { "name": "Lara", "initials": "LR" }
+      ],
+      "upcomingPlan": {
+        "id": "plan-2",
+        "title": "Sunday Market & Brunch",
+        "date": "Sunday · 11:30",
+        "location": "Moda Organik Pazar",
+        "goingCount": 3,
+        "maybeCount": 0,
+        "attendees": [
+          { "name": "Irmak", "initials": "IR" },
+          { "name": "Efe", "initials": "EF" },
+          { "name": "Lara", "initials": "LR" }
+        ]
+      },
+      "recentActivities": [
+        {
+          "id": "act-4",
+          "user": "Efe",
+          "action": "added Oat Milk to",
+          "target": "Weekend groceries",
+          "timeAgo": "45m"
+        },
+        {
+          "id": "act-5",
+          "user": "Lara",
+          "action": "completed task",
+          "target": "Water the plants",
+          "timeAgo": "3h"
+        },
+        {
+          "id": "act-6",
+          "user": "Irmak",
+          "action": "updated door code in",
+          "target": "Notes",
+          "timeAgo": "Yesterday"
+        }
+      ],
+      "recentActivity": "Efe added Oat Milk to shopping list",
+      "recentActivityTime": "45m ago"
+    },
+    {
+      "id": "manita",
+      "name": "Manita",
+      "tagline": "Our cozy corner & date nights",
+      "icon": "💘",
+      "accentColor": "#E7BEF8",
+      "type": "partner",
+      "sections": ["Plans", "Shared Lists", "Notes"],
+      "sectionMeta": {
+        "Plans": "2 upcoming",
+        "Shared Lists": "1 list · 4 items",
+        "Notes": "4 notes"
+      },
+      "memberCount": 2,
+      "members": [
+        { "name": "Irmak", "initials": "IR" },
+        { "name": "Cem", "initials": "CM" }
+      ],
+      "upcomingPlan": {
+        "id": "plan-3",
+        "title": "Saturday Jazz Night",
+        "date": "Saturday · 21:00",
+        "location": "Nardis Jazz Club",
+        "goingCount": 2,
+        "maybeCount": 0,
+        "attendees": [
+          { "name": "Irmak", "initials": "IR" },
+          { "name": "Cem", "initials": "CM" }
+        ]
+      },
+      "recentActivities": [
+        {
+          "id": "act-7",
+          "user": "Cem",
+          "action": "created plan",
+          "target": "Saturday Jazz Night",
+          "timeAgo": "2h"
+        },
+        {
+          "id": "act-8",
+          "user": "Irmak",
+          "action": "added 2 movies to",
+          "target": "Must-watch list",
+          "timeAgo": "1d"
+        }
+      ],
+      "recentActivity": "Cem added 'Saturday Jazz Night' plan",
+      "recentActivityTime": "2h ago"
+    },
+    {
+      "id": "yaz-tatili",
+      "name": "Yaz Tatili",
+      "tagline": "Kaş trip & boat tour",
+      "icon": "🌊",
+      "accentColor": "#F4D77A",
+      "type": "trip",
+      "sections": ["Plans", "Shared Lists", "Notes"],
+      "sectionMeta": {
+        "Plans": "1 upcoming",
+        "Shared Lists": "1 list · 4 items",
+        "Notes": "1 note"
+      },
+      "memberCount": 4,
+      "members": [
+        { "name": "Irmak", "initials": "IR" },
+        { "name": "Eren", "initials": "ER" },
+        { "name": "Selin", "initials": "SL" },
+        { "name": "Can", "initials": "CN" }
+      ],
+      "upcomingPlan": {
+        "id": "plan-4",
+        "title": "Kekova Boat Tour",
+        "date": "Friday, Sep 18 · 09:30",
+        "location": "Kaş Liman",
+        "goingCount": 4,
+        "maybeCount": 0,
+        "attendees": [
+          { "name": "Irmak", "initials": "IR" },
+          { "name": "Eren", "initials": "ER" },
+          { "name": "Selin", "initials": "SL" },
+          { "name": "Can", "initials": "CN" }
+        ]
+      },
+      "recentActivities": [
+        {
+          "id": "act-9",
+          "user": "Irmak",
+          "action": "added packing list to",
+          "target": "Yaz Tatili",
+          "timeAgo": "5h"
+        }
+      ],
+      "recentActivity": "Irmak added Kaş Packing list",
+      "recentActivityTime": "5h ago"
+    }
+  ],
+  "plans": [
+    {
+      "id": "plan-1",
+      "spaceId": "kankiler",
+      "title": "Saturday in Kadıköy",
+      "note": "Kahvaltı + biraz gezme",
+      "location": "Kadıköy",
+      "createdBy": "Irmak",
+      "invitedMemberIds": ["Irmak", "Eren", "Bengisu", "İrem", "Mert"],
+      "status": "confirmed",
+      "startAt": "2026-09-05T10:00:00Z",
+      "dateDisplay": "Saturday, Sep 5 · 10:00",
+      "createdAt": "2026-08-28T14:00:00Z",
+      "rsvps": [
+        { "id": "r1", "planId": "plan-1", "userId": "Irmak", "userName": "Irmak", "initials": "IR", "status": "going" },
+        { "id": "r2", "planId": "plan-1", "userId": "Eren", "userName": "Eren", "initials": "ER", "status": "going" },
+        { "id": "r3", "planId": "plan-1", "userId": "Bengisu", "userName": "Bengisu", "initials": "BE", "status": "going" },
+        { "id": "r4", "planId": "plan-1", "userId": "İrem", "userName": "İrem", "initials": "İR", "status": "going" },
+        { "id": "r5", "planId": "plan-1", "userId": "Mert", "userName": "Mert", "initials": "ME", "status": "maybe" }
+      ]
+    },
+    {
+      "id": "plan-2",
+      "spaceId": "ev",
+      "title": "Sunday Market & Brunch",
+      "note": "Taze sebze & kahve",
+      "location": "Moda Organik Pazar",
+      "createdBy": "Irmak",
+      "invitedMemberIds": ["Irmak", "Efe", "Lara"],
+      "status": "confirmed",
+      "startAt": "2026-09-06T11:30:00Z",
+      "dateDisplay": "Sunday, Sep 6 · 11:30",
+      "createdAt": "2026-08-28T16:00:00Z",
+      "rsvps": [
+        { "id": "r6", "planId": "plan-2", "userId": "Irmak", "userName": "Irmak", "initials": "IR", "status": "going" },
+        { "id": "r7", "planId": "plan-2", "userId": "Efe", "userName": "Efe", "initials": "EF", "status": "going" },
+        { "id": "r8", "planId": "plan-2", "userId": "Lara", "userName": "Lara", "initials": "LR", "status": "going" }
+      ]
+    },
+    {
+      "id": "plan-3",
+      "spaceId": "manita",
+      "title": "Saturday Jazz Night",
+      "note": "Masa ayırtıldı",
+      "location": "Nardis Jazz Club",
+      "createdBy": "Cem",
+      "invitedMemberIds": ["Irmak", "Cem"],
+      "status": "confirmed",
+      "startAt": "2026-09-05T21:00:00Z",
+      "dateDisplay": "Saturday, Sep 5 · 21:00",
+      "createdAt": "2026-08-28T18:00:00Z",
+      "rsvps": [
+        { "id": "r9", "planId": "plan-3", "userId": "Irmak", "userName": "Irmak", "initials": "IR", "status": "going" },
+        { "id": "r10", "planId": "plan-3", "userId": "Cem", "userName": "Cem", "initials": "CM", "status": "going" }
+      ]
+    },
+    {
+      "id": "plan-4",
+      "spaceId": "yaz-tatili",
+      "title": "Kekova Boat Tour",
+      "note": "Sunscreen and snorkel ready",
+      "location": "Kaş Liman",
+      "createdBy": "Irmak",
+      "invitedMemberIds": ["Irmak", "Eren", "Selin", "Can"],
+      "status": "confirmed",
+      "startAt": "2026-09-18T09:30:00Z",
+      "dateDisplay": "Friday, Sep 18 · 09:30",
+      "createdAt": "2026-08-28T19:00:00Z",
+      "rsvps": [
+        { "id": "r11", "planId": "plan-4", "userId": "Irmak", "userName": "Irmak", "initials": "IR", "status": "going" },
+        { "id": "r12", "planId": "plan-4", "userId": "Eren", "userName": "Eren", "initials": "ER", "status": "going" },
+        { "id": "r13", "planId": "plan-4", "userId": "Selin", "userName": "Selin", "initials": "SL", "status": "going" },
+        { "id": "r14", "planId": "plan-4", "userId": "Can", "userName": "Can", "initials": "CN", "status": "going" }
+      ]
+    }
+  ],
+  "polls": [
+    {
+      "id": "poll-1",
+      "spaceId": "kankiler",
+      "question": "Where should we eat?",
+      "note": "Saturday lunch after Kadıköy",
+      "createdBy": "Irmak",
+      "allowMultiple": true,
+      "membersCanAddOptions": true,
+      "isClosed": false,
+      "createdAt": "2026-08-28T15:30:00Z",
+      "options": [
+        {
+          "id": "popt-1",
+          "pollId": "poll-1",
+          "text": "Basta",
+          "createdBy": "Irmak",
+          "createdAt": "2026-08-28T15:30:00Z",
+          "voterIds": ["Irmak", "Eren", "Bengisu", "İrem"],
+          "voters": [
+            { "name": "Irmak", "initials": "IR" },
+            { "name": "Eren", "initials": "ER" },
+            { "name": "Bengisu", "initials": "BE" },
+            { "name": "İrem", "initials": "İR" }
+          ]
+        },
+        {
+          "id": "popt-2",
+          "pollId": "poll-1",
+          "text": "Cecconi's",
+          "createdBy": "Irmak",
+          "createdAt": "2026-08-28T15:30:00Z",
+          "voterIds": ["Eren", "Mert"],
+          "voters": [
+            { "name": "Eren", "initials": "ER" },
+            { "name": "Mert", "initials": "ME" }
+          ]
+        },
+        {
+          "id": "popt-3",
+          "pollId": "poll-1",
+          "text": "Il Sud",
+          "createdBy": "Bengisu",
+          "createdAt": "2026-08-28T16:00:00Z",
+          "voterIds": ["Bengisu"],
+          "voters": [
+            { "name": "Bengisu", "initials": "BE" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "poll-2",
+      "spaceId": "kankiler",
+      "question": "Which film for movie night?",
+      "createdBy": "Eren",
+      "allowMultiple": false,
+      "membersCanAddOptions": true,
+      "isClosed": false,
+      "createdAt": "2026-08-27T19:00:00Z",
+      "options": [
+        {
+          "id": "popt-4",
+          "pollId": "poll-2",
+          "text": "Dune 2",
+          "createdBy": "Eren",
+          "createdAt": "2026-08-27T19:00:00Z",
+          "voterIds": ["Irmak", "Eren", "Mert"],
+          "voters": [
+            { "name": "Irmak", "initials": "IR" },
+            { "name": "Eren", "initials": "ER" },
+            { "name": "Mert", "initials": "ME" }
+          ]
+        },
+        {
+          "id": "popt-5",
+          "pollId": "poll-2",
+          "text": "Past Lives",
+          "createdBy": "Bengisu",
+          "createdAt": "2026-08-27T19:00:00Z",
+          "voterIds": ["Bengisu", "İrem"],
+          "voters": [
+            { "name": "Bengisu", "initials": "BE" },
+            { "name": "İrem", "initials": "İR" }
+          ]
+        }
+      ]
+    }
+  ],
+  "lists": [
+    {
+      "id": "list-1",
+      "spaceId": "kankiler",
+      "name": "Movies we need to watch",
+      "description": "Cinema nights watchlist",
+      "template": "watchlist",
+      "createdBy": "Irmak",
+      "createdAt": "2026-08-28T10:00:00Z",
+      "items": [
+        {
+          "id": "item-1",
+          "listId": "list-1",
+          "text": "Past Lives",
+          "createdBy": "Irmak",
+          "completed": true,
+          "completedBy": "Irmak",
+          "completedAt": "2026-08-28T22:00:00Z",
+          "createdAt": "2026-08-28T10:00:00Z"
+        },
+        {
+          "id": "item-2",
+          "listId": "list-1",
+          "text": "Challengers",
+          "note": "Zendaya movie",
+          "createdBy": "Eren",
+          "completed": false,
+          "createdAt": "2026-08-28T11:00:00Z"
+        },
+        {
+          "id": "item-3",
+          "listId": "list-1",
+          "text": "The Substance",
+          "createdBy": "Bengisu",
+          "completed": false,
+          "createdAt": "2026-08-28T12:00:00Z"
+        },
+        {
+          "id": "item-4",
+          "listId": "list-1",
+          "text": "Aftersun",
+          "createdBy": "Irmak",
+          "completed": true,
+          "completedBy": "Eren",
+          "completedAt": "2026-08-28T23:30:00Z",
+          "createdAt": "2026-08-28T10:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "list-2",
+      "spaceId": "kankiler",
+      "name": "Kadıköy spots",
+      "description": "Food & hangout recommendations",
+      "template": "places",
+      "createdBy": "Eren",
+      "createdAt": "2026-08-27T16:00:00Z",
+      "items": [
+        {
+          "id": "item-5",
+          "listId": "list-2",
+          "text": "Basta",
+          "note": "Kaan Sakarya dürüm",
+          "createdBy": "Eren",
+          "completed": false,
+          "createdAt": "2026-08-27T16:00:00Z"
+        },
+        {
+          "id": "item-6",
+          "listId": "list-2",
+          "text": "Il Sud",
+          "note": "Pizza & pasta",
+          "createdBy": "Bengisu",
+          "completed": false,
+          "createdAt": "2026-08-27T16:30:00Z"
+        },
+        {
+          "id": "item-7",
+          "listId": "list-2",
+          "text": "Moda Sahnesi",
+          "createdBy": "Irmak",
+          "completed": false,
+          "createdAt": "2026-08-27T17:00:00Z"
+        },
+        {
+          "id": "item-8",
+          "listId": "list-2",
+          "text": "Yeldeğirmeni Coffee",
+          "createdBy": "İrem",
+          "completed": true,
+          "completedBy": "İrem",
+          "createdAt": "2026-08-27T18:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "list-3",
+      "spaceId": "ev",
+      "name": "Weekend groceries",
+      "description": "Apartment 4B shopping list",
+      "template": "shopping",
+      "createdBy": "Irmak",
+      "createdAt": "2026-08-28T09:00:00Z",
+      "items": [
+        {
+          "id": "item-9",
+          "listId": "list-3",
+          "text": "Oat milk",
+          "note": "Barista edition",
+          "createdBy": "Efe",
+          "completed": false,
+          "createdAt": "2026-08-28T09:00:00Z"
+        },
+        {
+          "id": "item-10",
+          "listId": "list-3",
+          "text": "Coffee beans",
+          "createdBy": "Irmak",
+          "completed": false,
+          "createdAt": "2026-08-28T09:15:00Z"
+        },
+        {
+          "id": "item-11",
+          "listId": "list-3",
+          "text": "Eggs",
+          "createdBy": "Lara",
+          "completed": true,
+          "completedBy": "Lara",
+          "createdAt": "2026-08-28T10:00:00Z"
+        },
+        {
+          "id": "item-12",
+          "listId": "list-3",
+          "text": "Sourdough bread",
+          "createdBy": "Irmak",
+          "completed": false,
+          "createdAt": "2026-08-28T10:30:00Z"
+        }
+      ]
+    },
+    {
+      "id": "list-4",
+      "spaceId": "yaz-tatili",
+      "name": "Kaş Packing list",
+      "description": "Don't forget anything",
+      "template": "trip",
+      "createdBy": "Irmak",
+      "createdAt": "2026-08-28T09:00:00Z",
+      "items": [
+        {
+          "id": "item-13",
+          "listId": "list-4",
+          "text": "Sunscreen (50 SPF)",
+          "createdBy": "Irmak",
+          "completed": false,
+          "createdAt": "2026-08-28T09:00:00Z"
+        },
+        {
+          "id": "item-14",
+          "listId": "list-4",
+          "text": "Swimsuit & towels",
+          "createdBy": "Selin",
+          "completed": true,
+          "completedBy": "Selin",
+          "createdAt": "2026-08-28T09:15:00Z"
+        },
+        {
+          "id": "item-15",
+          "listId": "list-4",
+          "text": "Power banks & chargers",
+          "createdBy": "Can",
+          "completed": false,
+          "createdAt": "2026-08-28T10:00:00Z"
+        },
+        {
+          "id": "item-16",
+          "listId": "list-4",
+          "text": "Snorkel & goggles",
+          "createdBy": "Eren",
+          "completed": true,
+          "completedBy": "Eren",
+          "createdAt": "2026-08-28T10:30:00Z"
+        }
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "task-1",
+      "spaceId": "ev",
+      "title": "Empty the dishwasher",
+      "note": "Clean mugs ready",
+      "createdBy": "Irmak",
+      "dueAt": "today",
+      "status": "open",
+      "createdAt": "2026-08-28T08:00:00Z"
+    },
+    {
+      "id": "task-2",
+      "spaceId": "ev",
+      "title": "Take out the trash",
+      "createdBy": "Lara",
+      "assignedTo": "Efe",
+      "dueAt": "today",
+      "status": "open",
+      "createdAt": "2026-08-28T08:30:00Z"
+    },
+    {
+      "id": "task-3",
+      "spaceId": "ev",
+      "title": "Buy laundry detergent",
+      "createdBy": "Irmak",
+      "assignedTo": "Irmak",
+      "dueAt": "tomorrow",
+      "status": "open",
+      "createdAt": "2026-08-28T09:00:00Z"
+    },
+    {
+      "id": "task-4",
+      "spaceId": "ev",
+      "title": "Water the plants",
+      "createdBy": "Irmak",
+      "assignedTo": "Lara",
+      "dueAt": "today",
+      "status": "completed",
+      "completedBy": "Lara",
+      "completedAt": "2026-08-28T15:00:00Z",
+      "createdAt": "2026-08-28T07:30:00Z"
+    }
+  ],
+  "notes": [
+    {
+      "id": "note-1",
+      "spaceId": "ev",
+      "title": "Wi-Fi & Door Codes",
+      "content": "Wi-Fi: Ev_5G\nPassword: nook1234\nDoor code: #4208",
+      "isPinned": true,
+      "createdBy": "Irmak",
+      "createdAt": "2026-08-27T10:00:00Z",
+      "updatedAt": "2026-08-28T14:00:00Z"
+    },
+    {
+      "id": "note-2",
+      "spaceId": "ev",
+      "title": "Building trash & recycling",
+      "content": "Recycling on Tuesdays and Fridays mornings. Organic bins are downstairs in the courtyard.",
+      "isPinned": false,
+      "createdBy": "Lara",
+      "createdAt": "2026-08-28T11:00:00Z",
+      "updatedAt": "2026-08-28T11:00:00Z"
+    },
+    {
+      "id": "note-3",
+      "spaceId": "kankiler",
+      "title": "Kaş Airbnb details",
+      "content": "Check-in is at 15:00.\nHost: Mehmet (+90 532 000 0000).\nKey lockbox code: 9912.\nRemember to bring portable speakers!",
+      "isPinned": true,
+      "createdBy": "Irmak",
+      "createdAt": "2026-08-28T12:00:00Z",
+      "updatedAt": "2026-08-28T12:00:00Z"
+    },
+    {
+      "id": "note-4",
+      "spaceId": "manita",
+      "title": "Anniversary dinner ideas",
+      "content": "1. Pandeli (Sultanahmet)\n2. Aheste (Pera)\n3. Nicole (Tomtom)",
+      "isPinned": true,
+      "createdBy": "Cem",
+      "createdAt": "2026-08-28T15:00:00Z",
+      "updatedAt": "2026-08-28T15:00:00Z"
+    }
+  ]
+}
