@@ -14,6 +14,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { SpacesProvider } from '@/hooks/use-spaces';
+import { spaceService } from '@/services/space-service';
 
 void SplashScreen.preventAutoHideAsync().catch(() => {
   // Fast Refresh can run after the development splash screen is already gone.
@@ -32,6 +33,10 @@ export default function RootLayout() {
     Poppins_600SemiBold,
     Poppins_700Bold,
   });
+
+  useEffect(() => {
+    void spaceService.restoreSession();
+  }, []);
 
   useEffect(() => {
     if ((loaded || error) && !hasHiddenSplash.current) {
@@ -78,6 +83,14 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === 'dark' ? customDarkTheme : customLightTheme}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="auth"
+            options={{
+              headerShown: false,
+              presentation: 'modal',
+              animation: 'slide_from_bottom',
+            }}
+          />
           <Stack.Screen
             name="space/[id]"
             options={{

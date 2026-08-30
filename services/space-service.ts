@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 
 import { ListTemplate } from '@/constants/list-templates';
+import { deleteSessionValue, getSessionValue, setSessionValue } from '@/services/session-storage';
 
 export type SpaceMemberRole = 'owner' | 'member';
 
@@ -18,6 +19,17 @@ export interface User {
   email: string;
   initials: string;
   avatarColor?: string;
+}
+
+export interface AuthCredentials {
+  email: string;
+  password: string;
+}
+
+export interface AuthSession {
+  accessToken: string;
+  expiresAtUtc: string;
+  user: User;
 }
 
 export const ALL_MOCK_USERS: SpaceMember[] = [
@@ -282,24 +294,131 @@ const API_URL =
   process.env.EXPO_PUBLIC_API_URL ??
   (Platform.OS === 'android' ? 'http://10.0.2.2:5180/api' : 'http://localhost:5180/api');
 
+const ACCESS_TOKEN_KEY = 'accessToken';
+const SESSION_USER_KEY = 'sessionUser';
+
+const DEFAULT_USER: User = {
+  id: 'user-irmak',
+  name: 'Irmak',
+  email: 'irmak@nook.app',
+  initials: 'IR',
+  avatarColor: '#7FB9E6',
+};
+
 class SpaceService {
-  private currentUser: User = {
-    id: 'user-irmak',
-    name: 'Irmak',
-    email: 'irmak@nook.app',
-    initials: 'IR',
-    avatarColor: '#7FB9E6',
-  };
+  private accessToken: string | null = null;
+  private currentUser: User = DEFAULT_USER;
+  private hasLoadedSession = false;
 
   private spaces: Space[] = [];
   private listeners: (() => void)[] = [];
 
+  public async restoreSession(): Promise<User | null> {
+    const [accessToken, storedUser] = await Promise.all([
+      getSessionValue(ACCESS_TOKEN_KEY),
+      getSessionValue(SESSION_USER_KEY),
+    ]);
+
+    this.accessToken = accessToken;
+    this.hasLoadedSession = true;
+
+    if (!accessToken) {
+      this.currentUser = DEFAULT_USER;
+      return null;
+    }
+
+    try {
+      if (storedUser) {
+        this.currentUser = this.normalizeUser(JSON.parse(storedUser) as User);
+      }
+
+      const user = await this.send<User>('/auth/me', undefined, false, false);
+      this.currentUser = this.normalizeUser(user);
+      await setSessionValue(SESSION_USER_KEY, JSON.stringify(this.currentUser));
+      this.notify();
+      return this.getCurrentUser();
+    } catch {
+      await this.logout(false);
+      return null;
+    }
+  }
+
+  public isSignedIn(): boolean {
+    return this.accessToken !== null;
+  }
+
+  public async login(credentials: AuthCredentials): Promise<AuthSession> {
+    const session = await this.send<AuthSession>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    }, false, false);
+    await this.applySession(session);
+    return session;
+  }
+
+  public async register(credentials: AuthCredentials): Promise<AuthSession> {
+    const session = await this.send<AuthSession>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    }, false, false);
+    await this.applySession(session);
+    return session;
+  }
+
+  public async logout(shouldNotify = true): Promise<void> {
+    this.accessToken = null;
+    this.currentUser = DEFAULT_USER;
+    await Promise.all([
+      deleteSessionValue(ACCESS_TOKEN_KEY),
+      deleteSessionValue(SESSION_USER_KEY),
+    ]);
+    if (shouldNotify) this.notify();
+  }
+
+  private async applySession(session: AuthSession): Promise<void> {
+    this.accessToken = session.accessToken;
+    this.currentUser = this.normalizeUser(session.user);
+    await Promise.all([
+      setSessionValue(ACCESS_TOKEN_KEY, session.accessToken),
+      setSessionValue(SESSION_USER_KEY, JSON.stringify(this.currentUser)),
+    ]);
+    this.notify();
+  }
+
+  private async ensureSessionLoaded(): Promise<void> {
+    if (this.hasLoadedSession) return;
+    await this.restoreSession();
+  }
+
+  private normalizeUser(user: User): User {
+    return {
+      ...DEFAULT_USER,
+      ...user,
+      id: String(user.id),
+      name: user.name || user.email.split('@')[0] || DEFAULT_USER.name,
+      initials: user.initials || user.name?.slice(0, 2).toUpperCase() || DEFAULT_USER.initials,
+      avatarColor: user.avatarColor || DEFAULT_USER.avatarColor,
+    };
+  }
+
   private async request<T>(path: string, options?: RequestInit, allowNotFound = false): Promise<T> {
+    return this.send<T>(path, options, allowNotFound, true);
+  }
+
+  private async send<T>(
+    path: string,
+    options?: RequestInit,
+    allowNotFound = false,
+    loadStoredSession = true
+  ): Promise<T> {
+    if (loadStoredSession) await this.ensureSessionLoaded();
+
     const response = await fetch(`${API_URL}${path}`, {
       ...options,
       headers: {
         Accept: 'application/json',
         ...(options?.body ? { 'Content-Type': 'application/json' } : {}),
+        ...(this.accessToken ? { Authorization: `Bearer ${this.accessToken}` } : {}),
         ...options?.headers,
       },
     });

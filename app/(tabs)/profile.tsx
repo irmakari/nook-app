@@ -10,7 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
+import { Href, useRouter } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { EditProfileModal } from '@/components/EditProfileModal';
@@ -26,12 +26,14 @@ export default function ProfileScreen() {
 
   const [user, setUser] = useState<User>(spaceService.getCurrentUser());
   const [spaces, setSpaces] = useState<Space[]>([]);
+  const [isSignedIn, setIsSignedIn] = useState(spaceService.isSignedIn());
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       setUser(spaceService.getCurrentUser());
+      setIsSignedIn(spaceService.isSignedIn());
       const allSpaces = await spaceService.getSpaces();
       setSpaces(allSpaces);
     };
@@ -63,6 +65,12 @@ export default function ProfileScreen() {
       pathname: '/space/[id]',
       params: { id: spaceId },
     });
+  };
+
+  const handleSignOut = async () => {
+    await spaceService.logout();
+    setUser(spaceService.getCurrentUser());
+    setIsSignedIn(false);
   };
 
   return (
@@ -143,6 +151,64 @@ export default function ProfileScreen() {
               Edit profile
             </ThemedText>
           </Pressable>
+        </View>
+
+        <View style={styles.sectionBlock}>
+          <ThemedText type="label" style={styles.sectionLabel}>
+            ACCOUNT
+          </ThemedText>
+
+          <View
+            style={[
+              styles.settingsCard,
+              {
+                backgroundColor: isDark ? '#1A1A1E' : '#FFFFFF',
+                borderColor: isDark ? '#26262B' : '#EFECE6',
+              },
+            ]}>
+            <View style={styles.settingRow}>
+              <View style={styles.settingLeft}>
+                <Ionicons
+                  name={isSignedIn ? 'cloud-done-outline' : 'cloud-offline-outline'}
+                  size={18}
+                  color={isDark ? '#A1A1AA' : '#71717A'}
+                />
+                <View>
+                  <ThemedText type="body" weight="medium">
+                    {isSignedIn ? 'Signed in' : 'Local preview'}
+                  </ThemedText>
+                  <ThemedText type="caption">
+                    {isSignedIn ? user.email : 'Connect to the Nook API'}
+                  </ThemedText>
+                </View>
+              </View>
+              <Pressable
+                onPress={() => {
+                  if (isSignedIn) {
+                    void handleSignOut();
+                  } else {
+                    router.push('/auth' as Href);
+                  }
+                }}
+                style={({ pressed }) => [
+                  styles.accountButton,
+                  {
+                    backgroundColor: pressed
+                      ? isDark
+                        ? '#26262F'
+                        : '#F5F2EB'
+                      : isDark
+                      ? '#222228'
+                      : '#FAF8F5',
+                    borderColor: isDark ? '#2D2D35' : '#EFECE6',
+                  },
+                ]}>
+                <ThemedText type="button">
+                  {isSignedIn ? 'Sign out' : 'Sign in'}
+                </ThemedText>
+              </Pressable>
+            </View>
+          </View>
         </View>
 
         {/* YOUR SPACES SECTION */}
@@ -334,6 +400,14 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
     gap: 8,
+  },
+  accountButton: {
+    alignItems: 'center',
+    borderRadius: 14,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 40,
+    paddingHorizontal: 14,
   },
   sectionBlock: {
     marginBottom: 22,
