@@ -9,9 +9,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
-import { ActivityItem } from '@/components/ActivityItem';
+import { ActivityCalendar } from '@/components/ActivityCalendar';
+import { ActivityTimelineCard } from '@/components/ActivityTimelineCard';
 import { Activity, spaceService } from '@/services/space-service';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export default function ActivityScreen() {
   const insets = useSafeAreaInsets();
@@ -20,6 +23,7 @@ export default function ActivityScreen() {
   const isDark = colorScheme === 'dark';
 
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   useEffect(() => {
     const loadActivities = async () => {
@@ -91,25 +95,37 @@ export default function ActivityScreen() {
     }
   };
 
-  // Group by Today, Yesterday, Earlier
-  const todayActivities: Activity[] = [];
-  const yesterdayActivities: Activity[] = [];
-  const earlierActivities: Activity[] = [];
+  const isToday = (d: Date) => {
+    const now = new Date();
+    return (
+      d.getFullYear() === now.getFullYear() &&
+      d.getMonth() === now.getMonth() &&
+      d.getDate() === now.getDate()
+    );
+  };
 
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const startOfYesterday = startOfToday - 24 * 60 * 60 * 1000;
-
-  activities.forEach((act) => {
-    const actTime = new Date(act.createdAt).getTime();
-    if (actTime >= startOfToday) {
-      todayActivities.push(act);
-    } else if (actTime >= startOfYesterday) {
-      yesterdayActivities.push(act);
-    } else {
-      earlierActivities.push(act);
-    }
+  // Find which day numbers have activities
+  const activeDayNumbers = activities.map((act) => {
+    const d = new Date(act.createdAt);
+    return d.getDate();
   });
+
+  const filteredActivities = activities.filter((act) => {
+    const actDate = new Date(act.createdAt);
+    return (
+      actDate.getFullYear() === selectedDate.getFullYear() &&
+      actDate.getMonth() === selectedDate.getMonth() &&
+      actDate.getDate() === selectedDate.getDate()
+    );
+  });
+
+  const displayList =
+    filteredActivities.length > 0 ? filteredActivities : activities;
+  const isFilteredEmpty = filteredActivities.length === 0;
+
+  const dayNumber = selectedDate.getDate();
+  const dayName = WEEKDAYS[selectedDate.getDay()];
+  const isSelectedToday = isToday(selectedDate);
 
   return (
     <View
@@ -126,89 +142,58 @@ export default function ActivityScreen() {
           styles.scrollContent,
           { paddingBottom: Math.max(insets.bottom + 90, 110) },
         ]}>
-        {/* Header */}
-        <View style={styles.header}>
-          <ThemedText type="hero" style={styles.headerTitle}>
-            Activity
-          </ThemedText>
-          <ThemedText style={styles.headerSubtitle}>
-            {"What's been happening in your Spaces"}
-          </ThemedText>
+        {/* Interactive Calendar Card */}
+        <ActivityCalendar
+          selectedDate={selectedDate}
+          onSelectDate={setSelectedDate}
+          activeDates={activeDayNumbers}
+          specialDates={[{ day: 27, icon: 'airplane' }]}
+        />
+
+        {/* Selected Date Summary Header */}
+        <View style={styles.dateSummaryRow}>
+          <View style={styles.dateNumberCol}>
+            <ThemedText type="label" style={styles.dateSubLabel}>
+              {isSelectedToday ? 'TODAY' : 'DATE'}
+            </ThemedText>
+            <View style={styles.dateTitleRow}>
+              <ThemedText type="display" weight="bold" style={styles.dateNumberText}>
+                {dayNumber}
+              </ThemedText>
+              <View style={styles.dayMetaCol}>
+                <ThemedText type="subtitle">
+                  {dayName}
+                </ThemedText>
+                <ThemedText type="caption">
+                  {filteredActivities.length}{' '}
+                  {filteredActivities.length === 1 ? 'activity' : 'activities'}
+                </ThemedText>
+              </View>
+            </View>
+          </View>
+
         </View>
 
-        {activities.length === 0 ? (
-          <View
-            style={[
-              styles.emptyBox,
-              {
-                backgroundColor: isDark ? '#1A1A1E' : '#FFFFFF',
-                borderColor: isDark ? '#26262B' : '#EFECE6',
-              },
-            ]}>
-            <Ionicons
-              name="sparkles-outline"
-              size={36}
-              color="#7FB9E6"
-              style={{ marginBottom: 10 }}
-            />
-            <ThemedText type="body" weight="semiBold" style={styles.emptyTitle}>
-              Quiet for now.
-            </ThemedText>
-            <ThemedText type="caption" style={styles.emptySubtitle}>
-              Things your Spaces do together will show up here.
+        {/* Notice when filtered day has no direct items */}
+        {isFilteredEmpty ? (
+          <View style={styles.emptyNoticeRow}>
+            <Ionicons name="calendar-outline" size={14} color="#8E8D94" />
+            <ThemedText type="caption">
+              No events on this day · Showing recent space activity
             </ThemedText>
           </View>
-        ) : (
-          <>
-            {/* TODAY GROUP */}
-            {todayActivities.length > 0 && (
-              <View style={styles.groupSection}>
-                <ThemedText type="caption" style={styles.groupLabel}>
-                  TODAY
-                </ThemedText>
-                {todayActivities.map((act) => (
-                  <ActivityItem
-                    key={act.id}
-                    activity={act}
-                    onPress={handleActivityPress}
-                  />
-                ))}
-              </View>
-            )}
+        ) : null}
 
-            {/* YESTERDAY GROUP */}
-            {yesterdayActivities.length > 0 && (
-              <View style={styles.groupSection}>
-                <ThemedText type="caption" style={styles.groupLabel}>
-                  YESTERDAY
-                </ThemedText>
-                {yesterdayActivities.map((act) => (
-                  <ActivityItem
-                    key={act.id}
-                    activity={act}
-                    onPress={handleActivityPress}
-                  />
-                ))}
-              </View>
-            )}
-
-            {/* EARLIER GROUP */}
-            {earlierActivities.length > 0 && (
-              <View style={styles.groupSection}>
-                <ThemedText type="caption" style={styles.groupLabel}>
-                  EARLIER
-                </ThemedText>
-                {earlierActivities.map((act) => (
-                  <ActivityItem
-                    key={act.id}
-                    activity={act}
-                    onPress={handleActivityPress}
-                  />
-                ))}
-              </View>
-            )}
-          </>
-        )}
+        {/* Timeline Activities List */}
+        <View style={styles.timelineList}>
+          {displayList.map((act) => (
+            <ActivityTimelineCard
+              key={act.id}
+              activity={act}
+              onPress={handleActivityPress}
+            />
+          ))}
+        </View>
       </ScrollView>
     </View>
   );
@@ -220,47 +205,41 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 8,
   },
-  header: {
-    marginBottom: 20,
-  },
-  headerTitle: {
-    fontSize: 32,
-    lineHeight: 38,
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    color: '#8E8D94',
-    fontSize: 14,
-  },
-  emptyBox: {
-    borderRadius: 22,
-    borderWidth: 1,
-    padding: 32,
+  dateSummaryRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+    marginTop: 4,
+  },
+  dateNumberCol: {
+    flex: 1,
+  },
+  dateSubLabel: {
+    marginBottom: 2,
+  },
+  dateTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  dateNumberText: {
+    fontSize: 34,
+    lineHeight: 38,
+  },
+  dayMetaCol: {
     justifyContent: 'center',
-    marginTop: 20,
   },
-  emptyTitle: {
-    fontSize: 17,
-    marginBottom: 4,
-    textAlign: 'center',
+  emptyNoticeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 14,
+    paddingHorizontal: 4,
   },
-  emptySubtitle: {
-    color: '#8E8D94',
-    textAlign: 'center',
-    maxWidth: 240,
-    lineHeight: 20,
-  },
-  groupSection: {
-    marginBottom: 16,
-  },
-  groupLabel: {
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#8E8D94',
-    fontSize: 11,
-    letterSpacing: 0.6,
-    marginBottom: 10,
+  timelineList: {
+    marginTop: 4,
   },
 });

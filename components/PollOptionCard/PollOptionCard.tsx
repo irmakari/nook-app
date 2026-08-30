@@ -35,7 +35,7 @@ export function PollOptionCard({
   }));
 
   const votesCount = option.voters.length;
-  const percentage = totalVotes > 0 ? (votesCount / totalVotes) * 100 : 0;
+  const percentage = totalVotes > 0 ? Math.round((votesCount / totalVotes) * 100) : 0;
 
   const softTint = getAccentTint(accentColor, isDark ? 0.24 : 0.16);
   const subtleBorder = getAccentTint(accentColor, isDark ? 0.38 : 0.28);
@@ -46,6 +46,8 @@ export function PollOptionCard({
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onVote(option.id);
   };
+
+  const voterNames = option.voters.map((v) => v.name).join(', ');
 
   return (
     <AnimatedPressable
@@ -135,7 +137,14 @@ export function PollOptionCard({
         )}
       </View>
 
-      {/* Bottom Row: Voter Avatars & Live Vote Count */}
+      {/* Voter Names (if any) */}
+      {voterNames ? (
+        <ThemedText numberOfLines={1} style={styles.voterNamesText}>
+          {voterNames} voted
+        </ThemedText>
+      ) : null}
+
+      {/* Bottom Row: Voter Avatars & Live Vote Count & Percentage */}
       <View style={styles.bottomRow}>
         <View style={styles.votersGroup}>
           {option.voters.length > 0 ? (
@@ -158,6 +167,16 @@ export function PollOptionCard({
             {votesCount} {votesCount === 1 ? 'vote' : 'votes'}
           </ThemedText>
         </View>
+
+        {totalVotes > 0 && (
+          <ThemedText
+            style={[
+              styles.percentageText,
+              { color: isSelected ? (isDark ? '#F4F4F5' : '#18181B') : accentColor },
+            ]}>
+            {percentage}%
+          </ThemedText>
+        )}
       </View>
     </AnimatedPressable>
   );

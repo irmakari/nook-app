@@ -77,8 +77,8 @@ export function PrimaryButton({
         <>
           {icon ? <View style={styles.iconContainer}>{icon}</View> : null}
           <ThemedText
+            type="button"
             style={[
-              styles.text,
               { color: disabled ? disabledText : finalTextColor },
             ]}>
             {title}

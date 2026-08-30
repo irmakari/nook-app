@@ -2,105 +2,83 @@ import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   card: {
-    borderRadius: 24,
-    borderWidth: 1,
-    padding: 18,
-    marginBottom: 14,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 14,
-    elevation: 3,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    borderRadius: 20,
+    padding: 16,
     marginBottom: 12,
   },
-  identityGroup: {
+  mainRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-    marginRight: 10,
   },
   iconBox: {
     width: 42,
     height: 42,
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
-    borderWidth: 1,
   },
-  iconEmoji: {
-    fontSize: 22,
-  },
-  titleWrapper: {
+  infoCol: {
     flex: 1,
+    justifyContent: 'center',
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 2,
   },
   spaceName: {
-    fontSize: 20,
-    lineHeight: 25,
+    fontSize: 17,
+    fontFamily: 'Poppins_700Bold',
+    color: '#111111',
     letterSpacing: -0.3,
   },
   tagline: {
-    marginTop: 1,
-    fontSize: 13,
-  },
-  memberBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 100,
-    borderWidth: 1,
-  },
-  memberBadgeText: {
-    fontSize: 11,
-    fontFamily: 'Poppins_600SemiBold',
-    letterSpacing: 0.2,
-  },
-  previewBox: {
-    borderRadius: 16,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    marginBottom: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  accentDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 8,
-  },
-  activityText: {
     fontSize: 12,
-    lineHeight: 17,
-    flex: 1,
-    fontFamily: 'Poppins_500Medium',
+    fontFamily: 'Poppins_400Regular',
+    color: '#555555',
+    lineHeight: 16,
   },
-  bottomRow: {
+  memberStack: {
+    marginLeft: 8,
+  },
+  memberText: {
+    fontSize: 12,
+    fontFamily: 'Poppins_500Medium',
+    color: '#444444',
+  },
+  contextFooter: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(0, 0, 0, 0.08)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  metaGroup: {
+  contextLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    flex: 1,
   },
-  activityTime: {
-    fontSize: 11,
+  contextDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#111111',
+    marginRight: 6,
+  },
+  contextText: {
+    fontSize: 12,
     fontFamily: 'Poppins_500Medium',
+    color: '#222222',
+    flex: 1,
   },
-  enterCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
+  timeText: {
+    fontSize: 11,
+    fontFamily: 'Poppins_400Regular',
+    color: '#666666',
+    marginLeft: 8,
   },
 });

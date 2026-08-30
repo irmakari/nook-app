@@ -28,37 +28,39 @@ export function ScreenHeader({
   return (
     <View style={styles.container}>
       <View style={styles.leftGroup}>
-        {showBackButton && (
-          <Pressable
-            onPress={handleBack}
-            style={({ pressed }) => [
-              styles.backButton,
-              {
-                backgroundColor: pressed
-                  ? isDark
-                    ? '#26262D'
-                    : '#EAE6DF'
-                  : isDark
-                  ? '#1A1A1E'
-                  : '#FFFFFF',
-                borderColor: isDark ? '#26262B' : '#EFECE6',
-              },
-            ]}>
-            <Ionicons
-              name="chevron-back"
-              size={20}
-              color={isDark ? '#F4F4F5' : '#18181B'}
-            />
-          </Pressable>
-        )}
-        <ThemedText type="hero" style={styles.title}>
-          {title}
-        </ThemedText>
-        {subtitle ? (
-          <ThemedText type="muted" style={styles.subtitle}>
-            {subtitle}
-          </ThemedText>
-        ) : null}
+        <View style={styles.titleRow}>
+          {showBackButton && (
+            <Pressable
+              onPress={handleBack}
+              hitSlop={6}
+              style={({ pressed }) => [
+                styles.backButton,
+                {
+                  backgroundColor: pressed
+                    ? isDark
+                      ? '#26262D'
+                      : '#EAE6DF'
+                    : 'transparent',
+                },
+              ]}>
+              <Ionicons
+                name="chevron-back"
+                size={22}
+                color={isDark ? '#F4F4F5' : '#18181B'}
+              />
+            </Pressable>
+          )}
+          <View style={styles.titleBlock}>
+            <ThemedText type="screenTitle">
+              {title}
+            </ThemedText>
+            {subtitle ? (
+              <ThemedText type="description" style={styles.subtitle}>
+                {subtitle}
+              </ThemedText>
+            ) : null}
+          </View>
+        </View>
       </View>
 
       {action ? <View style={styles.actionContainer}>{action}</View> : null}

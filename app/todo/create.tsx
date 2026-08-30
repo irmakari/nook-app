@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,16 +6,17 @@ import {
   TextInput,
   Pressable,
   Platform,
-  Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
 import { ThemedText } from '@/components/themed-text';
+import { ScreenContainer } from '@/components/ScreenContainer';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { AssigneeSelector } from '@/components/AssigneeSelector';
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { ConfirmModal } from '@/components/ConfirmModal';
 import { Space, spaceService } from '@/services/space-service';
 import { getAccentTint } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -53,13 +54,11 @@ export default function CreateTodoScreen() {
   const accentColor = space?.accentColor || '#7FB9E6';
   const softTint = getAccentTint(accentColor, isDark ? 0.22 : 0.14);
 
+  const [notice, setNotice] = useState<string | null>(null);
+
   const handleCreateTask = async () => {
     if (!title.trim()) {
-      if (Platform.OS === 'web') {
-        alert('Please enter a task title.');
-      } else {
-        Alert.alert('Notice', 'Please enter a task title.');
-      }
+      setNotice('Please enter a task title.');
       return;
     }
 
@@ -89,14 +88,7 @@ export default function CreateTodoScreen() {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: isDark ? '#121214' : '#FAF8F5',
-          paddingTop: Math.max(insets.top, 20),
-        },
-      ]}>
+    <ScreenContainer>
       <View style={styles.headerWrapper}>
         <ScreenHeader
           showBackButton
@@ -114,7 +106,7 @@ export default function CreateTodoScreen() {
         ]}>
         {/* Task Title Input */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             TASK
           </ThemedText>
           <TextInput
@@ -137,7 +129,7 @@ export default function CreateTodoScreen() {
         {/* Who's doing it? */}
         {space && (
           <View style={styles.inputGroup}>
-            <ThemedText type="caption" style={styles.label}>
+            <ThemedText type="label" style={styles.label}>
               {"WHO'S DOING IT?"}
             </ThemedText>
             <AssigneeSelector
@@ -151,7 +143,7 @@ export default function CreateTodoScreen() {
 
         {/* When? Due Date */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             WHEN?
           </ThemedText>
           <View style={styles.datePillsRow}>
@@ -202,7 +194,7 @@ export default function CreateTodoScreen() {
 
         {/* Optional Note */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             ADD A NOTE (OPTIONAL)
           </ThemedText>
           <TextInput
@@ -229,7 +221,8 @@ export default function CreateTodoScreen() {
           {
             backgroundColor: isDark ? '#121214' : '#FAF8F5',
             borderTopColor: isDark ? '#222227' : '#EFECE6',
-            bottom: insets.bottom,
+            bottom: 0,
+            paddingBottom: insets.bottom > 0 ? insets.bottom + 12 : 16,
           },
         ]}>
         <PrimaryButton
@@ -239,17 +232,13 @@ export default function CreateTodoScreen() {
           backgroundColor={accentColor}
         />
       </View>
-    </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   headerWrapper: {
     paddingHorizontal: 20,
-    paddingTop: 12,
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -259,10 +248,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#8E8D94',
-    fontSize: 11,
-    letterSpacing: 0.6,
     marginBottom: 8,
   },
   textInput: {

@@ -14,8 +14,6 @@ export const styles = StyleSheet.create({
     marginBottom: 4,
   },
   title: {
-    fontSize: 16,
-    lineHeight: 22,
     flex: 1,
     marginRight: 8,
   },
@@ -27,23 +25,11 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   contentPreview: {
-    color: '#8E8D94',
-    fontSize: 13,
-    lineHeight: 19,
     marginBottom: 12,
   },
   footerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  authorText: {
-    color: '#8E8D94',
-    fontSize: 11,
-    fontFamily: 'Poppins_500Medium',
-  },
-  timeText: {
-    color: '#8E8D94',
-    fontSize: 11,
   },
 });

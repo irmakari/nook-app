@@ -10,7 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
+import { Href, useRouter } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { EditProfileModal } from '@/components/EditProfileModal';
@@ -26,12 +26,14 @@ export default function ProfileScreen() {
 
   const [user, setUser] = useState<User>(spaceService.getCurrentUser());
   const [spaces, setSpaces] = useState<Space[]>([]);
+  const [isSignedIn, setIsSignedIn] = useState(spaceService.isSignedIn());
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       setUser(spaceService.getCurrentUser());
+      setIsSignedIn(spaceService.isSignedIn());
       const allSpaces = await spaceService.getSpaces();
       setSpaces(allSpaces);
     };
@@ -65,6 +67,12 @@ export default function ProfileScreen() {
     });
   };
 
+  const handleSignOut = async () => {
+    await spaceService.logout();
+    setUser(spaceService.getCurrentUser());
+    setIsSignedIn(false);
+  };
+
   return (
     <View
       style={[
@@ -82,7 +90,7 @@ export default function ProfileScreen() {
         ]}>
         {/* Header Title */}
         <View style={styles.header}>
-          <ThemedText type="hero" style={styles.headerTitle}>
+          <ThemedText type="display">
             Profile
           </ThemedText>
         </View>
@@ -108,9 +116,9 @@ export default function ProfileScreen() {
             </View>
 
             <View style={styles.userInfo}>
-              <ThemedText style={styles.userName}>{user.name}</ThemedText>
-              <ThemedText style={styles.userEmail}>{user.email}</ThemedText>
-              <ThemedText style={styles.userSpacesCount}>
+              <ThemedText type="title">{user.name}</ThemedText>
+              <ThemedText type="description" style={styles.userEmail}>{user.email}</ThemedText>
+              <ThemedText type="caption" weight="semiBold" style={styles.userSpacesCount}>
                 {spaces.length} {spaces.length === 1 ? 'Space' : 'Spaces'}
               </ThemedText>
             </View>
@@ -139,15 +147,73 @@ export default function ProfileScreen() {
               size={16}
               color={isDark ? '#F4F4F5' : '#18181B'}
             />
-            <ThemedText style={styles.editProfileBtnText}>
+            <ThemedText type="button">
               Edit profile
             </ThemedText>
           </Pressable>
         </View>
 
+        <View style={styles.sectionBlock}>
+          <ThemedText type="label" style={styles.sectionLabel}>
+            ACCOUNT
+          </ThemedText>
+
+          <View
+            style={[
+              styles.settingsCard,
+              {
+                backgroundColor: isDark ? '#1A1A1E' : '#FFFFFF',
+                borderColor: isDark ? '#26262B' : '#EFECE6',
+              },
+            ]}>
+            <View style={styles.settingRow}>
+              <View style={styles.settingLeft}>
+                <Ionicons
+                  name={isSignedIn ? 'cloud-done-outline' : 'cloud-offline-outline'}
+                  size={18}
+                  color={isDark ? '#A1A1AA' : '#71717A'}
+                />
+                <View>
+                  <ThemedText type="body" weight="medium">
+                    {isSignedIn ? 'Signed in' : 'Local preview'}
+                  </ThemedText>
+                  <ThemedText type="caption">
+                    {isSignedIn ? user.email : 'Connect to the Nook API'}
+                  </ThemedText>
+                </View>
+              </View>
+              <Pressable
+                onPress={() => {
+                  if (isSignedIn) {
+                    void handleSignOut();
+                  } else {
+                    router.push('/auth' as Href);
+                  }
+                }}
+                style={({ pressed }) => [
+                  styles.accountButton,
+                  {
+                    backgroundColor: pressed
+                      ? isDark
+                        ? '#26262F'
+                        : '#F5F2EB'
+                      : isDark
+                      ? '#222228'
+                      : '#FAF8F5',
+                    borderColor: isDark ? '#2D2D35' : '#EFECE6',
+                  },
+                ]}>
+                <ThemedText type="button">
+                  {isSignedIn ? 'Sign out' : 'Sign in'}
+                </ThemedText>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+
         {/* YOUR SPACES SECTION */}
         <View style={styles.sectionBlock}>
-          <ThemedText type="caption" style={styles.sectionLabel}>
+          <ThemedText type="label" style={styles.sectionLabel}>
             YOUR SPACES ({spaces.length})
           </ThemedText>
 
@@ -176,9 +242,9 @@ export default function ProfileScreen() {
                     color={space.accentColor || '#7FB9E6'}
                   />
                 </View>
-                <ThemedText style={styles.spaceName}>{space.name}</ThemedText>
+                <ThemedText type="body" weight="semiBold" style={styles.spaceName}>{space.name}</ThemedText>
 
-                <ThemedText style={styles.spaceMembers}>
+                <ThemedText type="caption" style={styles.spaceMembers}>
                   {space.memberCount} {space.memberCount === 1 ? 'person' : 'people'}
                 </ThemedText>
                 <Ionicons
@@ -193,7 +259,7 @@ export default function ProfileScreen() {
 
         {/* SETTINGS SECTION */}
         <View style={styles.sectionBlock}>
-          <ThemedText type="caption" style={styles.sectionLabel}>
+          <ThemedText type="label" style={styles.sectionLabel}>
             PREFERENCES
           </ThemedText>
 
@@ -213,7 +279,7 @@ export default function ProfileScreen() {
                   size={18}
                   color={isDark ? '#A1A1AA' : '#71717A'}
                 />
-                <ThemedText style={styles.settingText}>Haptic Feedback</ThemedText>
+                <ThemedText type="body" weight="medium">Haptic Feedback</ThemedText>
               </View>
               <Switch
                 value={hapticsEnabled}
@@ -235,9 +301,9 @@ export default function ProfileScreen() {
                   size={18}
                   color={isDark ? '#A1A1AA' : '#71717A'}
                 />
-                <ThemedText style={styles.settingText}>Appearance</ThemedText>
+                <ThemedText type="body" weight="medium">Appearance</ThemedText>
               </View>
-              <ThemedText style={{ color: '#8E8D94', fontSize: 13 }}>
+              <ThemedText type="description">
                 System ({colorScheme})
               </ThemedText>
             </View>
@@ -246,7 +312,7 @@ export default function ProfileScreen() {
 
         {/* ABOUT NOOK */}
         <View style={styles.sectionBlock}>
-          <ThemedText type="caption" style={styles.sectionLabel}>
+          <ThemedText type="label" style={styles.sectionLabel}>
             ABOUT
           </ThemedText>
           <View
@@ -257,9 +323,9 @@ export default function ProfileScreen() {
                 borderColor: isDark ? '#26262B' : '#EFECE6',
               },
             ]}>
-            <ThemedText style={styles.aboutAppName}>Nook</ThemedText>
-            <ThemedText style={styles.aboutVersion}>Version 1.0.0</ThemedText>
-            <ThemedText style={styles.aboutTagline}>
+            <ThemedText type="cardTitle">Nook</ThemedText>
+            <ThemedText type="metadata" style={styles.aboutVersion}>Version 1.0.0</ThemedText>
+            <ThemedText type="caption" style={styles.aboutTagline}>
               Private, cozy shared spaces for your favorite people.
             </ThemedText>
           </View>
@@ -287,10 +353,6 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 20,
-  },
-  headerTitle: {
-    fontSize: 32,
-    lineHeight: 38,
   },
   userCard: {
     padding: 20,
@@ -325,13 +387,9 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   userEmail: {
-    color: '#8E8D94',
-    fontSize: 13,
     marginBottom: 4,
   },
   userSpacesCount: {
-    fontSize: 12,
-    fontFamily: 'Poppins_600SemiBold',
     color: '#7FB9E6',
   },
   editProfileBtn: {
@@ -343,18 +401,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: 8,
   },
-  editProfileBtnText: {
-    fontSize: 13,
-    fontFamily: 'Poppins_600SemiBold',
+  accountButton: {
+    alignItems: 'center',
+    borderRadius: 14,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 40,
+    paddingHorizontal: 14,
   },
   sectionBlock: {
     marginBottom: 22,
   },
   sectionLabel: {
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#8E8D94',
-    fontSize: 11,
-    letterSpacing: 0.6,
     marginBottom: 10,
   },
   spacesList: {
@@ -380,12 +438,8 @@ const styles = StyleSheet.create({
   },
   spaceName: {
     flex: 1,
-    fontSize: 15,
-    fontFamily: 'Poppins_600SemiBold',
   },
   spaceMembers: {
-    color: '#8E8D94',
-    fontSize: 12,
     marginRight: 8,
   },
   settingsCard: {
@@ -405,30 +459,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  settingText: {
-    fontSize: 15,
-    fontFamily: 'Poppins_500Medium',
-  },
   aboutCard: {
     padding: 16,
     borderRadius: 20,
     borderWidth: 1,
     alignItems: 'center',
   },
-  aboutAppName: {
-    fontSize: 16,
-    fontFamily: 'Poppins_600SemiBold',
-    marginBottom: 2,
-  },
   aboutVersion: {
-    color: '#8E8D94',
-    fontSize: 12,
     marginBottom: 6,
   },
   aboutTagline: {
-    color: '#8E8D94',
-    fontSize: 12,
     textAlign: 'center',
-    lineHeight: 18,
   },
 });

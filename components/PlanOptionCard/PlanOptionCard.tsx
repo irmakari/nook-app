@@ -46,6 +46,8 @@ export function PlanOptionCard({
     onFinalize?.(option.id);
   };
 
+  const voterNames = option.voters.map((v) => v.name).join(', ');
+
   return (
     <AnimatedPressable
       onPressIn={() => (scale.value = withSpring(0.98, { damping: 15, stiffness: 300 }))}
@@ -104,6 +106,13 @@ export function PlanOptionCard({
         </View>
       </View>
 
+      {/* Voter Names (if any) */}
+      {voterNames ? (
+        <ThemedText numberOfLines={1} style={styles.voterNamesText}>
+          {voterNames} voted for this
+        </ThemedText>
+      ) : null}
+
       {/* Divider */}
       <View
         style={[
@@ -118,7 +127,7 @@ export function PlanOptionCard({
           {option.voters.length > 0 ? (
             <AvatarStack
               members={option.voters}
-              max={3}
+              max={4}
               size={22}
               ringColor={isSelected ? (isDark ? '#22222A' : '#FAF8F5') : (isDark ? '#1A1A1E' : '#FFFFFF')}
             />

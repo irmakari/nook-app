@@ -229,7 +229,7 @@ export default function TodoListScreen() {
           ]}>
           {/* Header Title & Open Count */}
           <View style={styles.titleRow}>
-            <ThemedText type="hero" style={styles.screenTitle}>
+            <ThemedText type="screenTitle">
               To-do
             </ThemedText>
 
@@ -483,10 +483,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 20,
-  },
-  screenTitle: {
-    fontSize: 28,
-    lineHeight: 34,
   },
   filterToggle: {
     flexDirection: 'row',

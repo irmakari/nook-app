@@ -3,23 +3,52 @@ import { StyleSheet, Text, type TextProps } from 'react-native';
 import { Typography } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
+export type TextVariant =
+  | 'display'
+  | 'screenTitle'
+  | 'title'
+  | 'subtitle'
+  | 'cardTitle'
+  | 'body'
+  | 'description'
+  | 'label'
+  | 'caption'
+  | 'metadata'
+  | 'button'
+  | 'link'
+  // Legacy aliases kept while the remaining components are migrated.
+  | 'hero'
+  | 'section'
+  | 'muted'
+  | 'default'
+  | 'defaultSemiBold';
+
+export type TextTone = 'primary' | 'secondary' | 'muted';
+export type TextWeight = 'regular' | 'medium' | 'semiBold' | 'bold';
+
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
-  type?:
-    | 'hero'
-    | 'title'
-    | 'subtitle'
-    | 'section'
-    | 'cardTitle'
-    | 'body'
-    | 'default'
-    | 'defaultSemiBold'
-    | 'label'
-    | 'caption'
-    | 'muted'
-    | 'link';
-  weight?: 'regular' | 'medium' | 'semiBold' | 'bold';
+  type?: TextVariant;
+  tone?: TextTone;
+  weight?: TextWeight;
+};
+
+const TYPE_ALIASES = {
+  hero: 'display',
+  section: 'label',
+  muted: 'description',
+  default: 'body',
+  defaultSemiBold: 'body',
+} as const;
+
+const DEFAULT_TONES: Partial<Record<TextVariant, TextTone>> = {
+  description: 'secondary',
+  label: 'secondary',
+  caption: 'secondary',
+  metadata: 'muted',
+  muted: 'secondary',
+  section: 'secondary',
 };
 
 export function ThemedText({
@@ -27,14 +56,21 @@ export function ThemedText({
   lightColor,
   darkColor,
   type = 'body',
+  tone,
   weight,
   ...rest
 }: ThemedTextProps) {
-  const defaultTextColor = type === 'muted' || type === 'caption' ? 'textSecondary' : 'text';
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, defaultTextColor as 'text');
-
-  const resolvedType =
-    type === 'default' ? 'body' : type === 'defaultSemiBold' ? 'defaultSemiBold' : type;
+  const resolvedType = TYPE_ALIASES[type as keyof typeof TYPE_ALIASES] ?? type;
+  const resolvedTone = tone ?? DEFAULT_TONES[type] ?? DEFAULT_TONES[resolvedType] ?? 'primary';
+  const colorName =
+    resolvedTone === 'primary'
+      ? 'text'
+      : resolvedTone === 'secondary'
+        ? 'textSecondary'
+        : 'textMuted';
+  const color = useThemeColor({ light: lightColor, dark: darkColor }, colorName);
+  const resolvedWeight =
+    weight ?? (type === 'defaultSemiBold' ? 'semiBold' : undefined);
 
   return (
     <Text
@@ -42,7 +78,7 @@ export function ThemedText({
         { color },
         styles.base,
         styles[resolvedType as keyof typeof styles],
-        weight && { fontFamily: Typography.fontFamily[weight] },
+        resolvedWeight && { fontFamily: Typography.fontFamily[resolvedWeight] },
         style,
       ]}
       {...rest}
@@ -53,52 +89,54 @@ export function ThemedText({
 const styles = StyleSheet.create({
   base: {
     fontFamily: Typography.fontFamily.regular,
-    letterSpacing: -0.2,
+    letterSpacing: 0,
   },
-  hero: {
+  display: {
     fontSize: 32,
     fontFamily: Typography.fontFamily.semiBold,
     lineHeight: 38,
-    letterSpacing: -0.6,
+    letterSpacing: 0,
   },
-  title: {
+  screenTitle: {
     fontSize: 26,
     fontFamily: Typography.fontFamily.semiBold,
     lineHeight: 32,
-    letterSpacing: -0.5,
+    letterSpacing: 0,
+  },
+  title: {
+    fontSize: 22,
+    fontFamily: Typography.fontFamily.semiBold,
+    lineHeight: 28,
+    letterSpacing: 0,
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontFamily: Typography.fontFamily.medium,
-    lineHeight: 26,
-    letterSpacing: -0.3,
-  },
-  section: {
-    fontSize: 13,
-    fontFamily: Typography.fontFamily.semiBold,
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
+    lineHeight: 24,
+    letterSpacing: 0,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontFamily: Typography.fontFamily.semiBold,
     lineHeight: 24,
-    letterSpacing: -0.3,
+    letterSpacing: 0,
   },
   body: {
     fontSize: 15,
     fontFamily: Typography.fontFamily.regular,
     lineHeight: 22,
   },
-  defaultSemiBold: {
-    fontSize: 15,
-    fontFamily: Typography.fontFamily.semiBold,
-    lineHeight: 22,
+  description: {
+    fontSize: 14,
+    fontFamily: Typography.fontFamily.regular,
+    lineHeight: 20,
   },
   label: {
-    fontSize: 14,
-    fontFamily: Typography.fontFamily.medium,
-    lineHeight: 20,
+    fontSize: 11,
+    fontFamily: Typography.fontFamily.semiBold,
+    lineHeight: 16,
+    letterSpacing: 0,
+    textTransform: 'uppercase',
   },
   caption: {
     fontSize: 12,
@@ -106,10 +144,15 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     letterSpacing: 0,
   },
-  muted: {
-    fontSize: 13,
-    fontFamily: Typography.fontFamily.regular,
-    lineHeight: 18,
+  metadata: {
+    fontSize: 11,
+    fontFamily: Typography.fontFamily.medium,
+    lineHeight: 16,
+  },
+  button: {
+    fontSize: 15,
+    fontFamily: Typography.fontFamily.semiBold,
+    lineHeight: 20,
   },
   link: {
     fontSize: 15,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,7 +6,7 @@ import {
   TextInput,
   Pressable,
   Platform,
-  Alert,
+  Switch,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,10 +14,12 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 import { ThemedText } from '@/components/themed-text';
+import { ScreenContainer } from '@/components/ScreenContainer';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { PlanModeSelector, PlanMode } from '@/components/PlanModeSelector';
 import { MemberSelector } from '@/components/MemberSelector';
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { ConfirmModal } from '@/components/ConfirmModal';
 import { Space, SpaceMember, spaceService } from '@/services/space-service';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -46,6 +48,7 @@ export default function CreatePlanScreen() {
   const [location, setLocation] = useState('Kadıköy');
   const [selectedMembers, setSelectedMembers] = useState<SpaceMember[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [allowMultiple, setAllowMultiple] = useState(true);
 
   // Voting options
   const [votingOptions, setVotingOptions] = useState<VotingOptionDraft[]>([
@@ -78,13 +81,11 @@ export default function CreatePlanScreen() {
     ]);
   };
 
+  const [notice, setNotice] = useState<string | null>(null);
+
   const handleRemoveVotingOption = (idToRemove: string) => {
     if (votingOptions.length <= 2) {
-      if (Platform.OS === 'web') {
-        alert('A voting plan requires at least 2 options.');
-      } else {
-        Alert.alert('Notice', 'A voting plan requires at least 2 options.');
-      }
+      setNotice('A voting plan requires at least 2 options.');
       return;
     }
     if (Platform.OS !== 'web') Haptics.selectionAsync();
@@ -103,20 +104,12 @@ export default function CreatePlanScreen() {
 
   const handleCreatePlan = async () => {
     if (!title.trim()) {
-      if (Platform.OS === 'web') {
-        alert('Please enter a plan name.');
-      } else {
-        Alert.alert('Notice', 'Please enter a plan name.');
-      }
+      setNotice('Please enter a plan name.');
       return;
     }
 
     if (mode === 'vote' && votingOptions.length < 2) {
-      if (Platform.OS === 'web') {
-        alert('Please provide at least 2 options for voting.');
-      } else {
-        Alert.alert('Notice', 'Please provide at least 2 options for voting.');
-      }
+      setNotice('Please provide at least 2 options for voting.');
       return;
     }
 
@@ -140,6 +133,7 @@ export default function CreatePlanScreen() {
             ? votingOptions.map((v) => ({ date: v.date, time: v.time }))
             : undefined,
         invitedMembers: selectedMembers,
+        allowMultiple,
       });
 
       router.replace({
@@ -154,14 +148,7 @@ export default function CreatePlanScreen() {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: isDark ? '#121214' : '#FAF8F5',
-          paddingTop: Math.max(insets.top, 20),
-        },
-      ]}>
+    <ScreenContainer>
       {/* Header */}
       <View style={styles.headerWrapper}>
         <ScreenHeader
@@ -180,7 +167,7 @@ export default function CreatePlanScreen() {
         ]}>
         {/* 1. Plan Name */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             PLAN NAME
           </ThemedText>
           <TextInput
@@ -202,7 +189,7 @@ export default function CreatePlanScreen() {
 
         {/* 2. Optional Note */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             ADD A NOTE (OPTIONAL)
           </ThemedText>
           <TextInput
@@ -223,7 +210,7 @@ export default function CreatePlanScreen() {
 
         {/* 3. When? Mode Decision */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             WHEN?
           </ThemedText>
           <PlanModeSelector
@@ -238,7 +225,7 @@ export default function CreatePlanScreen() {
           <View style={styles.dateTimeContainer}>
             <View style={styles.dateRow}>
               <View style={[styles.inputGroup, { flex: 1 }]}>
-                <ThemedText type="caption" style={styles.label}>
+                <ThemedText type="label" style={styles.label}>
                   DATE
                 </ThemedText>
                 <TextInput
@@ -258,7 +245,7 @@ export default function CreatePlanScreen() {
               </View>
 
               <View style={[styles.inputGroup, { width: 110 }]}>
-                <ThemedText type="caption" style={styles.label}>
+                <ThemedText type="label" style={styles.label}>
                   START TIME
                 </ThemedText>
                 <TextInput
@@ -279,7 +266,7 @@ export default function CreatePlanScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <ThemedText type="caption" style={styles.label}>
+              <ThemedText type="label" style={styles.label}>
                 END TIME (OPTIONAL)
               </ThemedText>
               <TextInput
@@ -303,7 +290,7 @@ export default function CreatePlanScreen() {
         {/* Mode B: Multi-option Voting List */}
         {mode === 'vote' && (
           <View style={styles.votingOptionsContainer}>
-            <ThemedText type="caption" style={styles.label}>
+            <ThemedText type="label" style={styles.label}>
               PROPOSED TIMES ({votingOptions.length})
             </ThemedText>
 
@@ -386,12 +373,34 @@ export default function CreatePlanScreen() {
                 Add another option
               </ThemedText>
             </Pressable>
+
+            {/* Allow Multiple choices Switch */}
+            <View
+              style={[
+                styles.switchGroup,
+                { borderTopColor: isDark ? '#26262B' : '#EFECE6' },
+              ]}>
+              <View style={styles.switchTextGroup}>
+                <ThemedText type="body" weight="medium">
+                  Allow multiple choices
+                </ThemedText>
+                <ThemedText type="caption" style={styles.switchHelp}>
+                  People can vote for more than one date/time
+                </ThemedText>
+              </View>
+              <Switch
+                value={allowMultiple}
+                onValueChange={setAllowMultiple}
+                trackColor={{ false: '#767577', true: accentColor }}
+                thumbColor={Platform.OS === 'ios' ? '#FFFFFF' : allowMultiple ? '#f4f3f4' : '#f4f3f4'}
+              />
+            </View>
           </View>
         )}
 
         {/* 4. Where? Location */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             WHERE? (OPTIONAL)
           </ThemedText>
           <TextInput
@@ -413,7 +422,7 @@ export default function CreatePlanScreen() {
         {/* 5. Who's invited? */}
         {space && (
           <View style={styles.inputGroup}>
-            <ThemedText type="caption" style={styles.label}>
+            <ThemedText type="label" style={styles.label}>
               {"WHO'S INVITED?"}
             </ThemedText>
             <MemberSelector
@@ -434,7 +443,8 @@ export default function CreatePlanScreen() {
           {
             backgroundColor: isDark ? '#121214' : '#FAF8F5',
             borderTopColor: isDark ? '#222227' : '#EFECE6',
-            bottom: insets.bottom,
+            bottom: 0,
+            paddingBottom: insets.bottom > 0 ? insets.bottom + 12 : 16,
           },
         ]}>
         <PrimaryButton
@@ -444,17 +454,26 @@ export default function CreatePlanScreen() {
           backgroundColor={accentColor}
         />
       </View>
-    </View>
+
+      {/* Notice Dialog */}
+      <ConfirmModal
+        visible={!!notice}
+        title="Notice"
+        message={notice || ''}
+        confirmText="Got it"
+        cancelText=""
+        accentColor={accentColor}
+        icon="information-circle-outline"
+        onConfirm={() => setNotice(null)}
+        onCancel={() => setNotice(null)}
+      />
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   headerWrapper: {
     paddingHorizontal: 20,
-    paddingTop: 12,
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -464,10 +483,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#8E8D94',
-    fontSize: 11,
-    letterSpacing: 0.6,
     marginBottom: 8,
   },
   textInput: {
@@ -540,7 +555,22 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: 20,
     paddingTop: 12,
-    paddingBottom: 16,
     borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  switchGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+  },
+  switchTextGroup: {
+    flex: 1,
+    paddingRight: 16,
+  },
+  switchHelp: {
+    color: '#8E8D94',
+    marginTop: 2,
   },
 });

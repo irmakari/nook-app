@@ -13,39 +13,37 @@
         "Polls": "2 active",
         "Shared Lists": "2 lists · 8 items"
       },
-      "memberCount": 5,
+      "memberCount": 4,
       "members": [
-        { "name": "Irmak", "initials": "IR" },
-        { "name": "Eren", "initials": "ER" },
         { "name": "Bengisu", "initials": "BE" },
         { "name": "İrem", "initials": "İR" },
-        { "name": "Mert", "initials": "ME" }
+        { "name": "Mert", "initials": "ME" },
+        { "name": "Mami", "initials": "MA" }
       ],
       "upcomingPlan": {
         "id": "plan-1",
         "title": "Saturday in Kadıköy",
         "date": "Saturday · 10:00",
         "location": "Kadıköy",
-        "goingCount": 4,
+        "goingCount": 3,
         "maybeCount": 1,
         "attendees": [
-          { "name": "Irmak", "initials": "IR" },
-          { "name": "Eren", "initials": "ER" },
           { "name": "Bengisu", "initials": "BE" },
-          { "name": "İrem", "initials": "İR" }
+          { "name": "İrem", "initials": "İR" },
+          { "name": "Mert", "initials": "ME" }
         ]
       },
       "recentActivities": [
         {
           "id": "act-1",
-          "user": "Ece",
+          "user": "Mami",
           "action": "voted on",
           "target": "Where should we eat?",
           "timeAgo": "12m"
         },
         {
           "id": "act-2",
-          "user": "Eren",
+          "user": "Mert",
           "action": "added \"Basta\" to",
           "target": "Where should we eat?",
           "timeAgo": "38m"
@@ -57,7 +55,7 @@
           "timeAgo": "1h"
         }
       ],
-      "recentActivity": "Ece voted on Where should we eat?",
+      "recentActivity": "Mami voted on Where should we eat?",
       "recentActivityTime": "12m ago"
     },
     {
@@ -75,9 +73,9 @@
       },
       "memberCount": 3,
       "members": [
-        { "name": "Irmak", "initials": "IR" },
-        { "name": "Efe", "initials": "EF" },
-        { "name": "Lara", "initials": "LR" }
+        { "name": "Dilek", "initials": "Dİ" },
+        { "name": "Burak", "initials": "BU" },
+        { "name": "Bora", "initials": "BO" }
       ],
       "upcomingPlan": {
         "id": "plan-2",
@@ -87,35 +85,35 @@
         "goingCount": 3,
         "maybeCount": 0,
         "attendees": [
-          { "name": "Irmak", "initials": "IR" },
-          { "name": "Efe", "initials": "EF" },
-          { "name": "Lara", "initials": "LR" }
+          { "name": "Dilek", "initials": "Dİ" },
+          { "name": "Burak", "initials": "BU" },
+          { "name": "Bora", "initials": "BO" }
         ]
       },
       "recentActivities": [
         {
           "id": "act-4",
-          "user": "Efe",
+          "user": "Burak",
           "action": "added Oat Milk to",
           "target": "Weekend groceries",
           "timeAgo": "45m"
         },
         {
           "id": "act-5",
-          "user": "Lara",
+          "user": "Bora",
           "action": "completed task",
           "target": "Water the plants",
           "timeAgo": "3h"
         },
         {
           "id": "act-6",
-          "user": "Irmak",
+          "user": "Dilek",
           "action": "updated door code in",
           "target": "Notes",
           "timeAgo": "Yesterday"
         }
       ],
-      "recentActivity": "Efe added Oat Milk to shopping list",
+      "recentActivity": "Burak added Oat Milk to shopping list",
       "recentActivityTime": "45m ago"
     },
     {
@@ -131,27 +129,25 @@
         "Shared Lists": "1 list · 4 items",
         "Notes": "4 notes"
       },
-      "memberCount": 2,
+      "memberCount": 1,
       "members": [
-        { "name": "Irmak", "initials": "IR" },
-        { "name": "Cem", "initials": "CM" }
+        { "name": "Eren", "initials": "ER" }
       ],
       "upcomingPlan": {
         "id": "plan-3",
         "title": "Saturday Jazz Night",
         "date": "Saturday · 21:00",
         "location": "Nardis Jazz Club",
-        "goingCount": 2,
+        "goingCount": 1,
         "maybeCount": 0,
         "attendees": [
-          { "name": "Irmak", "initials": "IR" },
-          { "name": "Cem", "initials": "CM" }
+          { "name": "Eren", "initials": "ER" }
         ]
       },
       "recentActivities": [
         {
           "id": "act-7",
-          "user": "Cem",
+          "user": "Eren",
           "action": "created plan",
           "target": "Saturday Jazz Night",
           "timeAgo": "2h"
@@ -164,7 +160,7 @@
           "timeAgo": "1d"
         }
       ],
-      "recentActivity": "Cem added 'Saturday Jazz Night' plan",
+      "recentActivity": "Eren added 'Saturday Jazz Night' plan",
       "recentActivityTime": "2h ago"
     },
     {
@@ -221,18 +217,17 @@
       "title": "Saturday in Kadıköy",
       "note": "Kahvaltı + biraz gezme",
       "location": "Kadıköy",
-      "createdBy": "Irmak",
-      "invitedMemberIds": ["Irmak", "Eren", "Bengisu", "İrem", "Mert"],
+      "createdBy": "Bengisu",
+      "invitedMemberIds": ["Bengisu", "İrem", "Mert", "Mami"],
       "status": "confirmed",
       "startAt": "2026-09-05T10:00:00Z",
       "dateDisplay": "Saturday, Sep 5 · 10:00",
       "createdAt": "2026-08-28T14:00:00Z",
       "rsvps": [
-        { "id": "r1", "planId": "plan-1", "userId": "Irmak", "userName": "Irmak", "initials": "IR", "status": "going" },
-        { "id": "r2", "planId": "plan-1", "userId": "Eren", "userName": "Eren", "initials": "ER", "status": "going" },
         { "id": "r3", "planId": "plan-1", "userId": "Bengisu", "userName": "Bengisu", "initials": "BE", "status": "going" },
         { "id": "r4", "planId": "plan-1", "userId": "İrem", "userName": "İrem", "initials": "İR", "status": "going" },
-        { "id": "r5", "planId": "plan-1", "userId": "Mert", "userName": "Mert", "initials": "ME", "status": "maybe" }
+        { "id": "r5", "planId": "plan-1", "userId": "Mert", "userName": "Mert", "initials": "ME", "status": "going" },
+        { "id": "r15", "planId": "plan-1", "userId": "Mami", "userName": "Mami", "initials": "MA", "status": "maybe" }
       ]
     },
     {
@@ -241,16 +236,16 @@
       "title": "Sunday Market & Brunch",
       "note": "Taze sebze & kahve",
       "location": "Moda Organik Pazar",
-      "createdBy": "Irmak",
-      "invitedMemberIds": ["Irmak", "Efe", "Lara"],
+      "createdBy": "Dilek",
+      "invitedMemberIds": ["Dilek", "Burak", "Bora"],
       "status": "confirmed",
       "startAt": "2026-09-06T11:30:00Z",
       "dateDisplay": "Sunday, Sep 6 · 11:30",
       "createdAt": "2026-08-28T16:00:00Z",
       "rsvps": [
-        { "id": "r6", "planId": "plan-2", "userId": "Irmak", "userName": "Irmak", "initials": "IR", "status": "going" },
-        { "id": "r7", "planId": "plan-2", "userId": "Efe", "userName": "Efe", "initials": "EF", "status": "going" },
-        { "id": "r8", "planId": "plan-2", "userId": "Lara", "userName": "Lara", "initials": "LR", "status": "going" }
+        { "id": "r6", "planId": "plan-2", "userId": "Dilek", "userName": "Dilek", "initials": "Dİ", "status": "going" },
+        { "id": "r7", "planId": "plan-2", "userId": "Burak", "userName": "Burak", "initials": "BU", "status": "going" },
+        { "id": "r8", "planId": "plan-2", "userId": "Bora", "userName": "Bora", "initials": "BO", "status": "going" }
       ]
     },
     {
@@ -259,15 +254,14 @@
       "title": "Saturday Jazz Night",
       "note": "Masa ayırtıldı",
       "location": "Nardis Jazz Club",
-      "createdBy": "Cem",
-      "invitedMemberIds": ["Irmak", "Cem"],
+      "createdBy": "Eren",
+      "invitedMemberIds": ["Eren"],
       "status": "confirmed",
       "startAt": "2026-09-05T21:00:00Z",
       "dateDisplay": "Saturday, Sep 5 · 21:00",
       "createdAt": "2026-08-28T18:00:00Z",
       "rsvps": [
-        { "id": "r9", "planId": "plan-3", "userId": "Irmak", "userName": "Irmak", "initials": "IR", "status": "going" },
-        { "id": "r10", "planId": "plan-3", "userId": "Cem", "userName": "Cem", "initials": "CM", "status": "going" }
+        { "id": "r9", "planId": "plan-3", "userId": "Eren", "userName": "Eren", "initials": "ER", "status": "going" }
       ]
     },
     {
@@ -294,6 +288,7 @@
     {
       "id": "poll-1",
       "spaceId": "kankiler",
+      "planId": "plan-1",
       "question": "Where should we eat?",
       "note": "Saturday lunch after Kadıköy",
       "createdBy": "Irmak",

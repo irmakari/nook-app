@@ -26,7 +26,7 @@ interface RSVPItemConfig {
 const RSVP_ITEMS: RSVPItemConfig[] = [
   { status: 'going', label: 'Going', iconName: 'checkmark-circle' },
   { status: 'maybe', label: 'Maybe', iconName: 'help-circle' },
-  { status: 'declined', label: "Can't make it", iconName: 'close-circle' },
+  { status: 'declined', label: 'No', iconName: 'close-circle' },
 ];
 
 function RSVPButton({

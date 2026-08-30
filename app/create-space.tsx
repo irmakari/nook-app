@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 
 import { ThemedText } from '@/components/themed-text';
+import { ScreenContainer } from '@/components/ScreenContainer';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { CreateSpaceOption, SpaceType } from '@/components/CreateSpaceOption';
 import { AccentPicker } from '@/components/AccentPicker';
@@ -215,14 +216,7 @@ export default function CreateSpaceScreen() {
   const softTint = getAccentTint(accentColor, isDark ? 0.22 : 0.15);
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: isDark ? '#121214' : '#FAF8F5',
-          paddingTop: Math.max(insets.top, 20),
-        },
-      ]}>
+    <ScreenContainer variant="modal">
       {/* Screen Header */}
       <View style={styles.headerWrapper}>
         <ScreenHeader
@@ -440,7 +434,8 @@ export default function CreateSpaceScreen() {
           {
             backgroundColor: isDark ? '#121214' : '#FAF8F5',
             borderTopColor: isDark ? '#222227' : '#EFECE6',
-            bottom: insets.bottom,
+            bottom: 0,
+            paddingBottom: insets.bottom > 0 ? insets.bottom + 12 : 16,
           },
         ]}>
         {step < 3 ? (
@@ -458,17 +453,13 @@ export default function CreateSpaceScreen() {
           />
         )}
       </View>
-    </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   headerWrapper: {
     paddingHorizontal: 20,
-    paddingTop: 12,
   },
   stepIndicator: {
     paddingHorizontal: 10,

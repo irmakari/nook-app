@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,7 +6,6 @@ import {
   TextInput,
   Pressable,
   Platform,
-  Alert,
   Switch,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -15,8 +14,10 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 import { ThemedText } from '@/components/themed-text';
+import { ScreenContainer } from '@/components/ScreenContainer';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { ConfirmModal } from '@/components/ConfirmModal';
 import { Space, spaceService } from '@/services/space-service';
 import { getAccentTint } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -67,13 +68,11 @@ export default function CreatePollScreen() {
     setOptions([...options, { id: newId, text: '' }]);
   };
 
+  const [notice, setNotice] = useState<string | null>(null);
+
   const handleRemoveOption = (idToRemove: string) => {
     if (options.length <= 2) {
-      if (Platform.OS === 'web') {
-        alert('A poll requires at least 2 options.');
-      } else {
-        Alert.alert('Notice', 'A poll requires at least 2 options.');
-      }
+      setNotice('A poll requires at least 2 options.');
       return;
     }
     if (Platform.OS !== 'web') Haptics.selectionAsync();
@@ -86,21 +85,13 @@ export default function CreatePollScreen() {
 
   const handleCreatePoll = async () => {
     if (!question.trim()) {
-      if (Platform.OS === 'web') {
-        alert('Please enter a poll question.');
-      } else {
-        Alert.alert('Notice', 'Please enter a poll question.');
-      }
+      setNotice('Please enter a poll question.');
       return;
     }
 
     const validOptions = options.map((o) => o.text.trim()).filter(Boolean);
     if (validOptions.length < 2) {
-      if (Platform.OS === 'web') {
-        alert('Please provide at least 2 non-empty options.');
-      } else {
-        Alert.alert('Notice', 'Please provide at least 2 non-empty options.');
-      }
+      setNotice('Please provide at least 2 non-empty options.');
       return;
     }
 
@@ -131,14 +122,7 @@ export default function CreatePollScreen() {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: isDark ? '#121214' : '#FAF8F5',
-          paddingTop: Math.max(insets.top, 20),
-        },
-      ]}>
+    <ScreenContainer>
       {/* Header */}
       <View style={styles.headerWrapper}>
         <ScreenHeader
@@ -157,7 +141,7 @@ export default function CreatePollScreen() {
         ]}>
         {/* 1. Poll Question */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             POLL QUESTION
           </ThemedText>
           <TextInput
@@ -179,7 +163,7 @@ export default function CreatePollScreen() {
 
         {/* 2. Optional Note */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             ADD A NOTE (OPTIONAL)
           </ThemedText>
           <TextInput
@@ -200,7 +184,7 @@ export default function CreatePollScreen() {
 
         {/* 3. Options List */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             OPTIONS ({options.length})
           </ThemedText>
 
@@ -265,7 +249,7 @@ export default function CreatePollScreen() {
 
         {/* 4. Voting Mode: One option vs Multiple options */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             PEOPLE CAN CHOOSE
           </ThemedText>
           <View style={styles.choicesRow}>
@@ -379,7 +363,8 @@ export default function CreatePollScreen() {
           {
             backgroundColor: isDark ? '#121214' : '#FAF8F5',
             borderTopColor: isDark ? '#222227' : '#EFECE6',
-            bottom: insets.bottom,
+            bottom: 0,
+            paddingBottom: insets.bottom > 0 ? insets.bottom + 12 : 16,
           },
         ]}>
         <PrimaryButton
@@ -389,17 +374,26 @@ export default function CreatePollScreen() {
           backgroundColor={accentColor}
         />
       </View>
-    </View>
+
+      {/* Notice Dialog */}
+      <ConfirmModal
+        visible={!!notice}
+        title="Notice"
+        message={notice || ''}
+        confirmText="Got it"
+        cancelText=""
+        accentColor={accentColor}
+        icon="information-circle-outline"
+        onConfirm={() => setNotice(null)}
+        onCancel={() => setNotice(null)}
+      />
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   headerWrapper: {
     paddingHorizontal: 20,
-    paddingTop: 12,
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -409,10 +403,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#8E8D94',
-    fontSize: 11,
-    letterSpacing: 0.6,
     marginBottom: 8,
   },
   textInput: {

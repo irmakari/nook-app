@@ -113,7 +113,7 @@ export function TaskDetailSheet({
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Title Input */}
             <View style={styles.inputGroup}>
-              <ThemedText type="caption" style={styles.label}>
+              <ThemedText type="label" style={styles.label}>
                 TASK TITLE
               </ThemedText>
               <TextInput
@@ -134,7 +134,7 @@ export function TaskDetailSheet({
 
             {/* Assignee Selector */}
             <View style={styles.inputGroup}>
-              <ThemedText type="caption" style={styles.label}>
+              <ThemedText type="label" style={styles.label}>
                 {"WHO'S DOING IT?"}
               </ThemedText>
               <AssigneeSelector
@@ -147,7 +147,7 @@ export function TaskDetailSheet({
 
             {/* Due Date Options */}
             <View style={styles.inputGroup}>
-              <ThemedText type="caption" style={styles.label}>
+              <ThemedText type="label" style={styles.label}>
                 WHEN?
               </ThemedText>
               <View style={styles.datePillsRow}>
@@ -198,7 +198,7 @@ export function TaskDetailSheet({
 
             {/* Note Input */}
             <View style={styles.inputGroup}>
-              <ThemedText type="caption" style={styles.label}>
+              <ThemedText type="label" style={styles.label}>
                 ADD A NOTE (OPTIONAL)
               </ThemedText>
               <TextInput

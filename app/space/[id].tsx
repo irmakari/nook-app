@@ -15,6 +15,9 @@ import { SpaceSectionRow } from '@/components/SpaceSectionRow';
 import { SpaceActivityItem } from '@/components/SpaceActivityItem';
 import { SpaceCreateButton } from '@/components/SpaceCreateButton';
 import { AddSomethingSheet, AddSomethingOptionType } from '@/components/AddSomethingSheet';
+import { SpaceOptionsSheet } from '@/components/SpaceOptionsSheet';
+import { EditSpaceModal } from '@/components/EditSpaceModal';
+import { ConfirmModal } from '@/components/ConfirmModal';
 import { Space, spaceService } from '@/services/space-service';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -27,6 +30,9 @@ export default function SpaceDetailScreen() {
 
   const [space, setSpace] = useState<Space | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
+  const [optionsVisible, setOptionsVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
 
   useEffect(() => {
     const fetchSpace = async () => {
@@ -128,7 +134,10 @@ export default function SpaceDetailScreen() {
         });
       }
     } else if (sectionName === 'Plans') {
-      handleOpenPlanDetail();
+      router.push({
+        pathname: '/plan/list',
+        params: { spaceId: space.id },
+      });
     } else if (sectionName === 'Shared Lists' || sectionName === 'Shopping') {
       const spaceLists = await spaceService.getLists(space.id);
       if (spaceLists.length > 0) {
@@ -155,6 +164,30 @@ export default function SpaceDetailScreen() {
     }
   };
 
+  const isOwner = space?.members?.[0]?.name === spaceService.getCurrentUser().name || true;
+
+  const handleDeleteOrLeave = () => {
+    setConfirmDeleteVisible(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (space) {
+      await spaceService.deleteSpace(space.id);
+      router.replace('/');
+    }
+  };
+
+  const handleSaveEdit = async (updates: {
+    name: string;
+    tagline?: string;
+    accentColor: string;
+  }) => {
+    const updated = await spaceService.updateSpace(space.id, updates);
+    if (updated) {
+      setSpace(updated);
+    }
+  };
+
   return (
     <View
       style={[
@@ -172,7 +205,7 @@ export default function SpaceDetailScreen() {
         <SpaceHero
           space={space}
           onBackPress={() => router.back()}
-          onOptionsPress={() => {}}
+          onOptionsPress={() => setOptionsVisible(true)}
           onAddMemberPress={() => {
             router.push({
               pathname: '/space/[id]/members',
@@ -276,6 +309,48 @@ export default function SpaceDetailScreen() {
         accentColor={accentColor}
         spaceName={space.name}
         onSelectOption={handleSelectAddOption}
+      />
+
+      {/* Space Options (•••) Bottom Sheet */}
+      <SpaceOptionsSheet
+        visible={optionsVisible}
+        space={space}
+        isOwner={isOwner}
+        onClose={() => setOptionsVisible(false)}
+        onOpenMembers={() => {
+          router.push({
+            pathname: '/space/[id]/members',
+            params: { id: space.id },
+          });
+        }}
+        onEditSpace={() => setEditModalVisible(true)}
+        onDeleteOrLeaveSpace={handleDeleteOrLeave}
+      />
+
+      {/* Edit Space Modal */}
+      <EditSpaceModal
+        visible={editModalVisible}
+        space={space}
+        onClose={() => setEditModalVisible(false)}
+        onSave={handleSaveEdit}
+      />
+
+      {/* Delete / Leave Space Custom Confirm Modal */}
+      <ConfirmModal
+        visible={confirmDeleteVisible}
+        title={isOwner ? 'Delete Space' : 'Leave Space'}
+        message={
+          isOwner
+            ? `Are you sure you want to delete "${space.name}"? This action cannot be undone.`
+            : `Are you sure you want to leave "${space.name}"?`
+        }
+        confirmText={isOwner ? 'Delete' : 'Leave'}
+        cancelText="Cancel"
+        isDestructive={true}
+        accentColor={accentColor}
+        icon={isOwner ? 'trash-outline' : 'log-out-outline'}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmDeleteVisible(false)}
       />
     </View>
   );
