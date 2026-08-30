@@ -25,6 +25,30 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
+## Backend'i çalıştırmak
+
+Backend'i başlatmak için repository root'undan şu komutları çalıştır:
+
+```bash
+cd backend
+dotnet run --project Nook.Api/Nook.Api.csproj --launch-profile http
+```
+
+İlk kez kurulum yapıyorsan önce migration'ları uygula:
+
+```bash
+cd backend
+dotnet tool restore
+dotnet tool run dotnet-ef database update --project Nook.Api/Nook.Api.csproj --startup-project Nook.Api/Nook.Api.csproj
+dotnet run --project Nook.Api/Nook.Api.csproj --launch-profile http
+```
+
+Backend çalışınca API şu adreste açılır:
+
+```text
+http://localhost:5180
+```
+
 ## Get a fresh project
 
 When you're ready, run:

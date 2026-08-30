@@ -34,7 +34,12 @@
               "script": {
                 "exec": [
                   "if (pm.response.code === 200) {",
-                  "  pm.collectionVariables.set('accessToken', pm.response.json().accessToken);",
+                  "  const token = pm.response.json().accessToken;",
+                  "  if (pm.environment.name) {",
+                  "    pm.environment.set('accessToken', token);",
+                  "  } else {",
+                  "    pm.collectionVariables.set('accessToken', token);",
+                  "  }",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -59,7 +64,12 @@
               "script": {
                 "exec": [
                   "if (pm.response.code === 200) {",
-                  "  pm.collectionVariables.set('accessToken', pm.response.json().accessToken);",
+                  "  const token = pm.response.json().accessToken;",
+                  "  if (pm.environment.name) {",
+                  "    pm.environment.set('accessToken', token);",
+                  "  } else {",
+                  "    pm.collectionVariables.set('accessToken', token);",
+                  "  }",
                   "}"
                 ],
                 "type": "text/javascript"
