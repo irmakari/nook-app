@@ -54,7 +54,7 @@ export function SpaceCreateButton({
         animatedStyle,
       ]}>
       <Ionicons name="add" size={20} color={textColor} />
-      <ThemedText style={[styles.text, { color: textColor }]}>
+      <ThemedText type="button" style={{ color: textColor }}>
         Add something
       </ThemedText>
     </AnimatedPressable>

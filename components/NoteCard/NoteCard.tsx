@@ -63,8 +63,7 @@ export function NoteCard({ note, accentColor, onPress }: NoteCardProps) {
       ]}>
       <View style={styles.headerRow}>
         <ThemedText
-          type="body"
-          weight="semiBold"
+          type="cardTitle"
           numberOfLines={1}
           style={styles.title}>
           {displayTitle}
@@ -78,18 +77,16 @@ export function NoteCard({ note, accentColor, onPress }: NoteCardProps) {
       </View>
 
       {remainingContent ? (
-        <ThemedText
-          numberOfLines={2}
-          style={styles.contentPreview}>
+        <ThemedText type="description" numberOfLines={2} style={styles.contentPreview}>
           {remainingContent}
         </ThemedText>
       ) : null}
 
       <View style={styles.footerRow}>
-        <ThemedText style={styles.authorText}>
+        <ThemedText type="metadata">
           {note.createdBy}
         </ThemedText>
-        <ThemedText style={styles.timeText}>
+        <ThemedText type="metadata">
           {formatRelativeTime(note.updatedAt)}
         </ThemedText>
       </View>

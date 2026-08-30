@@ -6,9 +6,16 @@ import * as Haptics from 'expo-haptics';
 import { ActivityCalendarProps } from './types';
 import { styles } from './styles';
 import { ThemedText } from '@/components/themed-text';
+import { getAccentTint, nookSpaceColors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const DAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+const ACTIVITY_COLORS = [
+  nookSpaceColors.sky,
+  nookSpaceColors.matcha,
+  nookSpaceColors.softLilac,
+  nookSpaceColors.butter,
+];
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -103,13 +110,16 @@ export function ActivityCalendar({
           style={[
             styles.monthPill,
             {
-              backgroundColor: isDark ? '#26262F' : '#F4F1EA',
+              backgroundColor: getAccentTint(
+                nookSpaceColors.sky,
+                isDark ? 0.24 : 0.2
+              ),
             },
           ]}>
           <Ionicons
             name="calendar-outline"
             size={15}
-            color={isDark ? '#F4F4F5' : '#18181B'}
+            color={isDark ? '#A9D5F5' : '#3979A8'}
           />
           <ThemedText style={styles.monthText}>
             {MONTH_NAMES[month]} {year}
@@ -123,9 +133,7 @@ export function ActivityCalendar({
               styles.circleIconBtn,
               {
                 backgroundColor: pressed
-                  ? isDark
-                    ? '#26262F'
-                    : '#EAE6DF'
+                  ? getAccentTint(nookSpaceColors.raspberryRose, 0.18)
                   : 'transparent',
               },
             ]}>
@@ -141,9 +149,7 @@ export function ActivityCalendar({
               styles.circleIconBtn,
               {
                 backgroundColor: pressed
-                  ? isDark
-                    ? '#26262F'
-                    : '#EAE6DF'
+                  ? getAccentTint(nookSpaceColors.raspberryRose, 0.18)
                   : 'transparent',
               },
             ]}>
@@ -158,9 +164,17 @@ export function ActivityCalendar({
 
       {/* Weekday Names Header */}
       <View style={styles.daysHeaderRow}>
-        {DAYS.map((d) => (
+        {DAYS.map((d, index) => (
           <View key={d} style={styles.dayHeaderCell}>
-            <ThemedText style={styles.dayHeaderText}>{d}</ThemedText>
+            <ThemedText
+              style={[
+                styles.dayHeaderText,
+                index >= 5 && {
+                  color: isDark ? '#F98BA9' : '#D94E84',
+                },
+              ]}>
+              {d}
+            </ThemedText>
           </View>
         ))}
       </View>
@@ -183,6 +197,7 @@ export function ActivityCalendar({
           }
 
           const isSelected = isSameDay(item.date, selectedDate);
+          const isToday = isSameDay(item.date, new Date());
           const hasActivity = activeDates.includes(item.day);
           const special = specialDates.find((s) => s.day === item.day);
 
@@ -190,10 +205,11 @@ export function ActivityCalendar({
           let textColor = isDark ? '#F4F4F5' : '#18181B';
 
           if (isSelected) {
-            cellBg = isDark ? '#F4F4F5' : '#18181B';
-            textColor = isDark ? '#18181B' : '#FFFFFF';
+            cellBg = nookSpaceColors.raspberryRose;
+            textColor = '#FFFFFF';
           } else if (hasActivity) {
-            cellBg = isDark ? '#26262E' : '#EAE6DF';
+            const activityColor = ACTIVITY_COLORS[item.day % ACTIVITY_COLORS.length];
+            cellBg = getAccentTint(activityColor, isDark ? 0.3 : 0.38);
           }
 
           return (
@@ -204,6 +220,8 @@ export function ActivityCalendar({
                 styles.dateCell,
                 {
                   backgroundColor: cellBg,
+                  borderColor: nookSpaceColors.raspberryRose,
+                  borderWidth: isToday && !isSelected ? 1.5 : 0,
                 },
               ]}>
               <ThemedText
@@ -218,8 +236,12 @@ export function ActivityCalendar({
               </ThemedText>
 
               {special && !isSelected && (
-                <View style={styles.specialBadge}>
-                  <Ionicons name="airplane" size={10} color="#7FB9E6" />
+                <View
+                  style={[
+                    styles.specialBadge,
+                    { backgroundColor: nookSpaceColors.tangerine },
+                  ]}>
+                  <Ionicons name="airplane" size={9} color="#FFFFFF" />
                 </View>
               )}
             </Pressable>

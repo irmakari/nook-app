@@ -9,11 +9,6 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 24,
   },
-  text: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 15,
-    letterSpacing: -0.2,
-  },
   iconContainer: {
     marginRight: 8,
   },

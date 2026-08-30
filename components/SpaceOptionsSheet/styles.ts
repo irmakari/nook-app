@@ -31,10 +31,6 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 16,
   },
-  headerTitle: {
-    fontSize: 20,
-    fontFamily: 'Poppins_600SemiBold',
-  },
   optionsList: {
     gap: 8,
   },
@@ -56,15 +52,5 @@ export const styles = StyleSheet.create({
   },
   optionTextCol: {
     flex: 1,
-  },
-  optionTitle: {
-    fontSize: 15,
-    fontFamily: 'Poppins_600SemiBold',
-    marginBottom: 2,
-  },
-  optionSubtitle: {
-    fontSize: 12,
-    color: '#8E8D94',
-    fontFamily: 'Poppins_400Regular',
   },
 });

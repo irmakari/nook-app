@@ -76,20 +76,22 @@ export function ActivityTimelineCard({
       {/* Content Column */}
       <View style={styles.contentCol}>
         <View style={styles.timeSpaceRow}>
-          <ThemedText style={styles.timeText}>{timeAgo}</ThemedText>
+          <ThemedText type="metadata" style={styles.timeText}>{timeAgo}</ThemedText>
           <View style={[styles.spaceDot, { backgroundColor: accentColor }]} />
-          <ThemedText style={[styles.spaceName, { color: accentColor }]}>
+          <ThemedText type="metadata" weight="semiBold" style={{ color: accentColor }}>
             {activity.spaceName}
           </ThemedText>
         </View>
 
         <ThemedText
+          type="body"
+          weight="semiBold"
           numberOfLines={1}
-          style={[styles.title, { color: isDark ? '#F4F4F5' : '#18181B' }]}>
+          style={{ color: isDark ? '#F4F4F5' : '#18181B' }}>
           {activity.targetTitle || activity.actionText}
         </ThemedText>
 
-        <ThemedText numberOfLines={1} style={styles.actorSubText}>
+        <ThemedText type="caption" numberOfLines={1} style={styles.actorSubText}>
           {activity.actorName} {activity.actionText}
         </ThemedText>
       </View>

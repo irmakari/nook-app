@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 import { ThemedText } from '@/components/themed-text';
+import { ScreenContainer } from '@/components/ScreenContainer';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { ConfirmModal } from '@/components/ConfirmModal';
@@ -121,14 +122,7 @@ export default function CreatePollScreen() {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: isDark ? '#121214' : '#FAF8F5',
-          paddingTop: Math.max(insets.top, 20),
-        },
-      ]}>
+    <ScreenContainer>
       {/* Header */}
       <View style={styles.headerWrapper}>
         <ScreenHeader
@@ -147,7 +141,7 @@ export default function CreatePollScreen() {
         ]}>
         {/* 1. Poll Question */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             POLL QUESTION
           </ThemedText>
           <TextInput
@@ -169,7 +163,7 @@ export default function CreatePollScreen() {
 
         {/* 2. Optional Note */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             ADD A NOTE (OPTIONAL)
           </ThemedText>
           <TextInput
@@ -190,7 +184,7 @@ export default function CreatePollScreen() {
 
         {/* 3. Options List */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             OPTIONS ({options.length})
           </ThemedText>
 
@@ -255,7 +249,7 @@ export default function CreatePollScreen() {
 
         {/* 4. Voting Mode: One option vs Multiple options */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             PEOPLE CAN CHOOSE
           </ThemedText>
           <View style={styles.choicesRow}>
@@ -393,17 +387,13 @@ export default function CreatePollScreen() {
         onConfirm={() => setNotice(null)}
         onCancel={() => setNotice(null)}
       />
-    </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   headerWrapper: {
     paddingHorizontal: 20,
-    paddingTop: 12,
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -413,10 +403,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#8E8D94',
-    fontSize: 11,
-    letterSpacing: 0.6,
     marginBottom: 8,
   },
   textInput: {

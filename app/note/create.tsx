@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 import { ThemedText } from '@/components/themed-text';
+import { ScreenContainer } from '@/components/ScreenContainer';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Space, spaceService } from '@/services/space-service';
@@ -79,14 +80,7 @@ export default function CreateNoteScreen() {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View
-        style={[
-          styles.container,
-          {
-            backgroundColor: isDark ? '#121214' : '#FAF8F5',
-            paddingTop: Math.max(insets.top, 20),
-          },
-        ]}>
+      <ScreenContainer>
         <View style={styles.headerWrapper}>
           <ScreenHeader
             showBackButton
@@ -104,7 +98,7 @@ export default function CreateNoteScreen() {
           ]}>
           {/* Optional Title Input */}
           <View style={styles.inputGroup}>
-            <ThemedText type="caption" style={styles.label}>
+            <ThemedText type="label" style={styles.label}>
               TITLE (OPTIONAL)
             </ThemedText>
             <TextInput
@@ -125,7 +119,7 @@ export default function CreateNoteScreen() {
 
           {/* Auto-growing Note Content */}
           <View style={styles.inputGroup}>
-            <ThemedText type="caption" style={styles.label}>
+            <ThemedText type="label" style={styles.label}>
               NOTE
             </ThemedText>
             <TextInput
@@ -229,18 +223,14 @@ export default function CreateNoteScreen() {
             disabled={!content.trim()}
           />
         </View>
-      </View>
+      </ScreenContainer>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   headerWrapper: {
     paddingHorizontal: 20,
-    paddingTop: 12,
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -250,10 +240,6 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   label: {
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#8E8D94',
-    fontSize: 11,
-    letterSpacing: 0.6,
     marginBottom: 8,
   },
   titleInput: {

@@ -18,11 +18,11 @@ export function SpaceCard({ space, onPress }: SpaceCardProps) {
   // Soft, refined pastel surface for the card
   const cardBg = isDark
     ? getAccentTint(accentColor, 0.22)
-    : getAccentTint(accentColor, 0.38);
+    : getAccentTint(accentColor, 0.44);
 
   const iconBoxBg = isDark
     ? getAccentTint(accentColor, 0.45)
-    : getAccentTint(accentColor, 0.65);
+    : getAccentTint(accentColor, 0.74);
 
   const handlePress = () => {
     if (Platform.OS !== 'web') {

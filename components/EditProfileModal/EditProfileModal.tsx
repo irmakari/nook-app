@@ -85,7 +85,7 @@ export function EditProfileModal({
 
           {/* Name Input */}
           <View style={styles.inputGroup}>
-            <ThemedText type="caption" style={styles.label}>
+            <ThemedText type="label" style={styles.label}>
               DISPLAY NAME
             </ThemedText>
             <TextInput
@@ -107,7 +107,7 @@ export function EditProfileModal({
 
           {/* Email Input */}
           <View style={styles.inputGroup}>
-            <ThemedText type="caption" style={styles.label}>
+            <ThemedText type="label" style={styles.label}>
               EMAIL ADDRESS
             </ThemedText>
             <TextInput

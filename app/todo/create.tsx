@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
 import { ThemedText } from '@/components/themed-text';
+import { ScreenContainer } from '@/components/ScreenContainer';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { AssigneeSelector } from '@/components/AssigneeSelector';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -87,14 +88,7 @@ export default function CreateTodoScreen() {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: isDark ? '#121214' : '#FAF8F5',
-          paddingTop: Math.max(insets.top, 20),
-        },
-      ]}>
+    <ScreenContainer>
       <View style={styles.headerWrapper}>
         <ScreenHeader
           showBackButton
@@ -112,7 +106,7 @@ export default function CreateTodoScreen() {
         ]}>
         {/* Task Title Input */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             TASK
           </ThemedText>
           <TextInput
@@ -135,7 +129,7 @@ export default function CreateTodoScreen() {
         {/* Who's doing it? */}
         {space && (
           <View style={styles.inputGroup}>
-            <ThemedText type="caption" style={styles.label}>
+            <ThemedText type="label" style={styles.label}>
               {"WHO'S DOING IT?"}
             </ThemedText>
             <AssigneeSelector
@@ -149,7 +143,7 @@ export default function CreateTodoScreen() {
 
         {/* When? Due Date */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             WHEN?
           </ThemedText>
           <View style={styles.datePillsRow}>
@@ -200,7 +194,7 @@ export default function CreateTodoScreen() {
 
         {/* Optional Note */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             ADD A NOTE (OPTIONAL)
           </ThemedText>
           <TextInput
@@ -238,17 +232,13 @@ export default function CreateTodoScreen() {
           backgroundColor={accentColor}
         />
       </View>
-    </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   headerWrapper: {
     paddingHorizontal: 20,
-    paddingTop: 4,
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -258,10 +248,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#8E8D94',
-    fontSize: 11,
-    letterSpacing: 0.6,
     marginBottom: 8,
   },
   textInput: {

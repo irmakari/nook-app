@@ -62,7 +62,7 @@ export function SpaceOptionsSheet({
           />
 
           <View style={styles.headerRow}>
-            <ThemedText style={styles.headerTitle}>
+            <ThemedText type="title">
               {space.name}
             </ThemedText>
             <Pressable onPress={onClose}>
@@ -103,8 +103,8 @@ export function SpaceOptionsSheet({
                 />
               </View>
               <View style={styles.optionTextCol}>
-                <ThemedText style={styles.optionTitle}>Space Members</ThemedText>
-                <ThemedText style={styles.optionSubtitle}>
+                <ThemedText type="body" weight="semiBold">Space Members</ThemedText>
+                <ThemedText type="caption">
                   {space.memberCount} {space.memberCount === 1 ? 'person' : 'people'} in this Space
                 </ThemedText>
               </View>
@@ -143,8 +143,8 @@ export function SpaceOptionsSheet({
                 />
               </View>
               <View style={styles.optionTextCol}>
-                <ThemedText style={styles.optionTitle}>Edit Space Details</ThemedText>
-                <ThemedText style={styles.optionSubtitle}>
+                <ThemedText type="body" weight="semiBold">Edit Space Details</ThemedText>
+                <ThemedText type="caption">
                   Change name, tagline & theme color
                 </ThemedText>
               </View>
@@ -183,10 +183,10 @@ export function SpaceOptionsSheet({
                 />
               </View>
               <View style={styles.optionTextCol}>
-                <ThemedText style={[styles.optionTitle, { color: '#F2619C' }]}>
+                <ThemedText type="body" weight="semiBold" style={{ color: '#F2619C' }}>
                   {isOwner ? 'Delete Space' : 'Leave Space'}
                 </ThemedText>
-                <ThemedText style={styles.optionSubtitle}>
+                <ThemedText type="caption">
                   {isOwner
                     ? 'Permanently delete this Space'
                     : 'Leave and remove from your spaces'}

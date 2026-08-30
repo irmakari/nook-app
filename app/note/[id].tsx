@@ -227,7 +227,7 @@ export default function NoteDetailScreen() {
 
         {/* Note Title if present */}
         {note.title ? (
-          <ThemedText type="hero" style={styles.noteTitle}>
+          <ThemedText type="screenTitle" style={styles.noteTitle}>
             {note.title}
           </ThemedText>
         ) : null}
@@ -416,8 +416,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   noteTitle: {
-    fontSize: 28,
-    lineHeight: 34,
     marginBottom: 16,
   },
   noteContent: {

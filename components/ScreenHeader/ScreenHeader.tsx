@@ -32,6 +32,7 @@ export function ScreenHeader({
           {showBackButton && (
             <Pressable
               onPress={handleBack}
+              hitSlop={6}
               style={({ pressed }) => [
                 styles.backButton,
                 {
@@ -39,25 +40,22 @@ export function ScreenHeader({
                     ? isDark
                       ? '#26262D'
                       : '#EAE6DF'
-                    : isDark
-                    ? '#1A1A1E'
-                    : '#FFFFFF',
-                  borderColor: isDark ? '#26262B' : '#EFECE6',
+                    : 'transparent',
                 },
               ]}>
               <Ionicons
                 name="chevron-back"
-                size={20}
+                size={22}
                 color={isDark ? '#F4F4F5' : '#18181B'}
               />
             </Pressable>
           )}
           <View style={styles.titleBlock}>
-            <ThemedText type="hero" style={styles.title}>
+            <ThemedText type="screenTitle">
               {title}
             </ThemedText>
             {subtitle ? (
-              <ThemedText type="muted" style={styles.subtitle}>
+              <ThemedText type="description" style={styles.subtitle}>
                 {subtitle}
               </ThemedText>
             ) : null}

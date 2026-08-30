@@ -78,7 +78,12 @@ export const styles = StyleSheet.create({
   },
   specialBadge: {
     position: 'absolute',
-    bottom: -2,
-    right: -2,
+    bottom: -3,
+    right: -3,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

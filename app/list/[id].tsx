@@ -248,7 +248,7 @@ export default function ListDetailScreen() {
           </View>
 
           {/* List Title */}
-          <ThemedText type="hero" style={styles.listTitle}>
+          <ThemedText type="screenTitle" style={styles.listTitle}>
             {list.name}
           </ThemedText>
 
@@ -485,8 +485,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   listTitle: {
-    fontSize: 28,
-    lineHeight: 34,
     marginBottom: 4,
   },
   descriptionText: {

@@ -107,10 +107,10 @@ export function AddSomethingSheet({
 
           {/* Header */}
           <View style={styles.header}>
-            <ThemedText type="title" style={styles.title}>
+            <ThemedText type="title">
               Add something
             </ThemedText>
-            <ThemedText type="muted" style={styles.subtitle}>
+            <ThemedText type="description" style={styles.subtitle}>
               What are we doing?
             </ThemedText>
           </View>

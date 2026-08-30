@@ -32,6 +32,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
+          tabBarActiveTintColor: isDark ? '#A9D5F5' : '#3979A8',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'grid' : 'grid-outline'}
@@ -45,6 +46,7 @@ export default function TabLayout() {
         name="activity"
         options={{
           title: 'Activity',
+          tabBarActiveTintColor: isDark ? '#F98BA9' : '#D94E84',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'pulse' : 'pulse-outline'}
@@ -58,6 +60,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: 'Profile',
+          tabBarActiveTintColor: isDark ? '#D6E58E' : '#6F8233',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'person' : 'person-outline'}

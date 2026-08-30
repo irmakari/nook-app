@@ -252,7 +252,7 @@ export default function PollDetailScreen() {
         </View>
 
         {/* Question Title */}
-        <ThemedText type="hero" style={styles.questionTitle}>
+        <ThemedText type="screenTitle" style={styles.questionTitle}>
           {poll.question}
         </ThemedText>
 
@@ -493,8 +493,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   questionTitle: {
-    fontSize: 28,
-    lineHeight: 34,
     marginBottom: 4,
   },
   creatorRow: {

@@ -32,10 +32,6 @@ export const styles = StyleSheet.create({
     marginBottom: 2,
   },
   timeText: {
-    fontSize: 11,
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#8E8D94',
-    letterSpacing: 0.3,
     textTransform: 'uppercase',
   },
   spaceDot: {
@@ -43,20 +39,7 @@ export const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
   },
-  spaceName: {
-    fontSize: 11,
-    fontFamily: 'Poppins_600SemiBold',
-  },
-  title: {
-    fontSize: 14,
-    fontFamily: 'Poppins_600SemiBold',
-    letterSpacing: -0.2,
-    lineHeight: 20,
-  },
   actorSubText: {
-    fontSize: 12,
-    fontFamily: 'Poppins_400Regular',
-    color: '#8E8D94',
     marginTop: 1,
   },
   rightChevron: {

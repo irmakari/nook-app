@@ -175,7 +175,7 @@ export default function PlansListScreen() {
         ]}>
         {/* Page Title */}
         <View style={styles.titleRow}>
-          <ThemedText type="hero" style={styles.screenTitle}>
+          <ThemedText type="screenTitle">
             Plans
           </ThemedText>
           <ThemedText type="caption" style={styles.countBadge}>
@@ -432,10 +432,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 20,
-  },
-  screenTitle: {
-    fontSize: 28,
-    lineHeight: 34,
   },
   countBadge: {
     color: '#8E8D94',

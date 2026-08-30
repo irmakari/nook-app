@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
 import { ThemedText } from '@/components/themed-text';
+import { ScreenContainer } from '@/components/ScreenContainer';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { ListTemplateOption } from '@/components/ListTemplateOption';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -85,14 +86,7 @@ export default function CreateListScreen() {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: isDark ? '#121214' : '#FAF8F5',
-          paddingTop: Math.max(insets.top, 20),
-        },
-      ]}>
+    <ScreenContainer>
       <View style={styles.headerWrapper}>
         <ScreenHeader
           showBackButton
@@ -110,7 +104,7 @@ export default function CreateListScreen() {
         ]}>
         {/* Template Selector Grid */}
         <View style={styles.sectionBlock}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             CHOOSE A TEMPLATE
           </ThemedText>
 
@@ -129,7 +123,7 @@ export default function CreateListScreen() {
 
         {/* List Name */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             LIST NAME
           </ThemedText>
           <TextInput
@@ -150,7 +144,7 @@ export default function CreateListScreen() {
 
         {/* Optional Description */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             SHORT DESCRIPTION (OPTIONAL)
           </ThemedText>
           <TextInput
@@ -188,17 +182,13 @@ export default function CreateListScreen() {
           backgroundColor={accentColor}
         />
       </View>
-    </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   headerWrapper: {
     paddingHorizontal: 20,
-    paddingTop: 12,
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -208,10 +198,6 @@ const styles = StyleSheet.create({
     marginBottom: 22,
   },
   label: {
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#8E8D94',
-    fontSize: 11,
-    letterSpacing: 0.6,
     marginBottom: 10,
   },
   templatesGrid: {

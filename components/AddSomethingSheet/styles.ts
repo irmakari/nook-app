@@ -32,15 +32,8 @@ export const styles = StyleSheet.create({
   header: {
     marginBottom: 20,
   },
-  title: {
-    fontSize: 22,
-    lineHeight: 28,
-    letterSpacing: -0.4,
-  },
   subtitle: {
-    color: '#8E8D94',
     marginTop: 3,
-    fontSize: 14,
   },
   optionsList: {
     gap: 10,

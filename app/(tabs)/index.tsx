@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { ThemedText } from '@/components/themed-text';
 import { SpaceCard } from '@/components/SpaceCard';
+import { nookSpaceColors } from '@/constants/theme';
 import { Space, spaceService } from '@/services/space-service';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -80,10 +81,10 @@ export default function HomeScreen() {
         {/* Top Greeting & Create Header */}
         <View style={styles.header}>
           <View style={styles.greetingWrapper}>
-            <ThemedText type="hero" style={styles.greetingText}>
+            <ThemedText type="display">
               {getGreeting()}, {spaceService.getCurrentUser().name}.
             </ThemedText>
-            <ThemedText type="muted" style={styles.subGreeting}>
+            <ThemedText type="description" style={styles.subGreeting}>
               A private place for every part of your life.
             </ThemedText>
           </View>
@@ -95,39 +96,38 @@ export default function HomeScreen() {
               {
                 backgroundColor: pressed
                   ? isDark
-                    ? '#2C2C34'
-                    : '#EAE6DF'
-                  : isDark
-                  ? '#1C1C20'
-                  : '#FFFFFF',
-                borderColor: isDark ? '#2B2B33' : '#EBE7E0',
+                    ? '#F98BA9'
+                    : '#D94E84'
+                  : nookSpaceColors.raspberryRose,
+                borderColor: isDark ? '#F98BA9' : '#D94E84',
               },
             ]}>
             <Ionicons
               name="add"
               size={22}
-              color={isDark ? '#F4F4F5' : '#18181B'}
+              color="#FFFFFF"
             />
           </Pressable>
         </View>
 
         {/* Section Heading & Space Count */}
         <View style={styles.sectionHeader}>
-          <ThemedText type="section" style={styles.sectionTitle}>
+          <ThemedText type="label">
             Your spaces
           </ThemedText>
           <View
             style={[
               styles.countPill,
               {
-                backgroundColor: isDark ? '#1E1E24' : '#EFECE6',
+                backgroundColor: isDark
+                  ? 'rgba(127, 185, 230, 0.24)'
+                  : 'rgba(127, 185, 230, 0.22)',
               },
             ]}>
             <ThemedText
               type="caption"
               style={{
-                color: isDark ? '#A1A1AA' : '#71717A',
-                fontFamily: 'Poppins_600SemiBold',
+                color: isDark ? '#A9D5F5' : '#3979A8',
               }}>
               {spaces.length}
             </ThemedText>
@@ -167,14 +167,8 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingRight: 16,
   },
-  greetingText: {
-    fontSize: 28,
-    lineHeight: 34,
-  },
   subGreeting: {
     marginTop: 4,
-    color: '#8E8D94',
-    fontSize: 14,
   },
   headerPlusButton: {
     width: 44,
@@ -183,20 +177,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    shadowColor: '#000',
+    shadowColor: '#F2619C',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
+    shadowOpacity: 0.22,
+    shadowRadius: 10,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 14,
     gap: 8,
-  },
-  sectionTitle: {
-    color: '#8E8D94',
-    fontSize: 12,
   },
   countPill: {
     paddingHorizontal: 7,

@@ -14,31 +14,22 @@ export const styles = StyleSheet.create({
   },
   titleRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+    alignItems: 'flex-start',
+    gap: 6,
   },
   titleBlock: {
     flex: 1,
   },
   backButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
     flexShrink: 0,
-  },
-  title: {
-    fontSize: 26,
-    lineHeight: 32,
-    letterSpacing: -0.5,
   },
   subtitle: {
     marginTop: 2,
-    color: '#8E8D94',
-    fontSize: 14,
-    lineHeight: 20,
   },
   actionContainer: {
     marginLeft: 8,

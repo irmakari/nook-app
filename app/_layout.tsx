@@ -9,13 +9,15 @@ import {
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { SpacesProvider } from '@/hooks/use-spaces';
 
-SplashScreen.preventAutoHideAsync();
+void SplashScreen.preventAutoHideAsync().catch(() => {
+  // Fast Refresh can run after the development splash screen is already gone.
+});
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -23,6 +25,7 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const hasHiddenSplash = useRef(false);
   const [loaded, error] = useFonts({
     Poppins_400Regular,
     Poppins_500Medium,
@@ -31,8 +34,14 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (loaded || error) {
-      SplashScreen.hideAsync();
+    if ((loaded || error) && !hasHiddenSplash.current) {
+      hasHiddenSplash.current = true;
+
+      try {
+        SplashScreen.hide();
+      } catch {
+        // The splash may already be hidden during a development reload.
+      }
     }
   }, [loaded, error]);
 
@@ -88,8 +97,8 @@ export default function RootLayout() {
             name="plan/create"
             options={{
               headerShown: false,
-              presentation: 'modal',
-              animation: 'slide_from_bottom',
+              presentation: 'card',
+              animation: 'slide_from_right',
             }}
           />
           <Stack.Screen
@@ -110,8 +119,8 @@ export default function RootLayout() {
             name="poll/create"
             options={{
               headerShown: false,
-              presentation: 'modal',
-              animation: 'slide_from_bottom',
+              presentation: 'card',
+              animation: 'slide_from_right',
             }}
           />
           <Stack.Screen
@@ -125,8 +134,8 @@ export default function RootLayout() {
             name="list/create"
             options={{
               headerShown: false,
-              presentation: 'modal',
-              animation: 'slide_from_bottom',
+              presentation: 'card',
+              animation: 'slide_from_right',
             }}
           />
           <Stack.Screen
@@ -140,8 +149,8 @@ export default function RootLayout() {
             name="todo/create"
             options={{
               headerShown: false,
-              presentation: 'modal',
-              animation: 'slide_from_bottom',
+              presentation: 'card',
+              animation: 'slide_from_right',
             }}
           />
           <Stack.Screen
@@ -155,8 +164,8 @@ export default function RootLayout() {
             name="note/create"
             options={{
               headerShown: false,
-              presentation: 'modal',
-              animation: 'slide_from_bottom',
+              presentation: 'card',
+              animation: 'slide_from_right',
             }}
           />
           <Stack.Screen

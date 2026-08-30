@@ -38,10 +38,6 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#8E8D94',
-    fontSize: 11,
-    letterSpacing: 0.6,
     marginBottom: 8,
   },
   textInput: {

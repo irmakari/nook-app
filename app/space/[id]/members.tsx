@@ -190,7 +190,7 @@ export default function SpaceMembersScreen() {
         ]}>
         {/* Title Header */}
         <View style={styles.titleRow}>
-          <ThemedText type="hero" style={styles.screenTitle}>
+          <ThemedText type="screenTitle">
             Members
           </ThemedText>
           <ThemedText type="caption" style={styles.countBadge}>
@@ -198,7 +198,7 @@ export default function SpaceMembersScreen() {
           </ThemedText>
         </View>
 
-        <ThemedText type="caption" style={styles.sectionLabel}>
+        <ThemedText type="label" style={styles.sectionLabel}>
           IN THIS SPACE
         </ThemedText>
 
@@ -301,19 +301,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 16,
   },
-  screenTitle: {
-    fontSize: 28,
-    lineHeight: 34,
-  },
   countBadge: {
     color: '#8E8D94',
     fontSize: 13,
   },
   sectionLabel: {
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#8E8D94',
-    fontSize: 11,
-    letterSpacing: 0.6,
     marginBottom: 10,
   },
   bottomBar: {

@@ -84,9 +84,9 @@ export function ConfirmModal({
           </View>
 
           {/* Title & Message */}
-          <ThemedText style={styles.title}>{title}</ThemedText>
+          <ThemedText type="cardTitle" weight="bold" style={styles.title}>{title}</ThemedText>
           {message ? (
-            <ThemedText style={styles.message}>{message}</ThemedText>
+            <ThemedText type="description" style={styles.message}>{message}</ThemedText>
           ) : null}
 
           {/* Action Buttons */}
@@ -108,8 +108,8 @@ export function ConfirmModal({
                   },
                 ]}>
                 <ThemedText
+                  type="button"
                   style={[
-                    styles.cancelText,
                     { color: isDark ? '#A1A1AA' : '#71717A' },
                   ]}>
                   {cancelText}
@@ -128,8 +128,8 @@ export function ConfirmModal({
                 },
               ]}>
               <ThemedText
+                type="button"
                 style={[
-                  styles.confirmText,
                   { color: isDestructive ? '#FFFFFF' : '#111111' },
                 ]}>
                 {confirmText}

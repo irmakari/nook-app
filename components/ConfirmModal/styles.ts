@@ -33,18 +33,11 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 18,
-    fontFamily: 'Poppins_700Bold',
     textAlign: 'center',
-    letterSpacing: -0.3,
     marginBottom: 6,
   },
   message: {
-    fontSize: 13,
-    fontFamily: 'Poppins_400Regular',
     textAlign: 'center',
-    color: '#8E8D94',
-    lineHeight: 19,
     marginBottom: 22,
   },
   buttonsRow: {
@@ -61,20 +54,11 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
   },
-  cancelText: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 14,
-  },
   confirmButton: {
     flex: 1,
     height: 46,
     borderRadius: 23,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  confirmText: {
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 14,
-    color: '#FFFFFF',
   },
 });

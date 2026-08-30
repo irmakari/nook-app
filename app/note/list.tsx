@@ -173,7 +173,7 @@ export default function NotesListScreen() {
         ]}>
         {/* Screen Title */}
         <View style={styles.titleRow}>
-          <ThemedText type="hero" style={styles.screenTitle}>
+          <ThemedText type="screenTitle">
             Notes
           </ThemedText>
           <ThemedText type="caption" style={styles.countBadge}>
@@ -209,7 +209,7 @@ export default function NotesListScreen() {
             {/* PINNED SECTION */}
             {pinnedNotes.length > 0 && (
               <View style={styles.sectionBlock}>
-                <ThemedText type="caption" style={styles.sectionLabel}>
+                <ThemedText type="label" style={styles.sectionLabel}>
                   PINNED ({pinnedNotes.length})
                 </ThemedText>
                 {pinnedNotes.map((note) => (
@@ -227,7 +227,7 @@ export default function NotesListScreen() {
             {regularNotes.length > 0 && (
               <View style={styles.sectionBlock}>
                 {pinnedNotes.length > 0 && (
-                  <ThemedText type="caption" style={styles.sectionLabel}>
+                  <ThemedText type="label" style={styles.sectionLabel}>
                     NOTES ({regularNotes.length})
                   </ThemedText>
                 )}
@@ -302,10 +302,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 20,
   },
-  screenTitle: {
-    fontSize: 28,
-    lineHeight: 34,
-  },
   countBadge: {
     color: '#8E8D94',
     fontSize: 13,
@@ -331,10 +327,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionLabel: {
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#8E8D94',
-    fontSize: 11,
-    letterSpacing: 0.6,
     marginBottom: 8,
   },
   bottomBar: {

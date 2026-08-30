@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 import { ThemedText } from '@/components/themed-text';
+import { ScreenContainer } from '@/components/ScreenContainer';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { PlanModeSelector, PlanMode } from '@/components/PlanModeSelector';
 import { MemberSelector } from '@/components/MemberSelector';
@@ -147,14 +148,7 @@ export default function CreatePlanScreen() {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: isDark ? '#121214' : '#FAF8F5',
-          paddingTop: Math.max(insets.top, 20),
-        },
-      ]}>
+    <ScreenContainer>
       {/* Header */}
       <View style={styles.headerWrapper}>
         <ScreenHeader
@@ -173,7 +167,7 @@ export default function CreatePlanScreen() {
         ]}>
         {/* 1. Plan Name */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             PLAN NAME
           </ThemedText>
           <TextInput
@@ -195,7 +189,7 @@ export default function CreatePlanScreen() {
 
         {/* 2. Optional Note */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             ADD A NOTE (OPTIONAL)
           </ThemedText>
           <TextInput
@@ -216,7 +210,7 @@ export default function CreatePlanScreen() {
 
         {/* 3. When? Mode Decision */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             WHEN?
           </ThemedText>
           <PlanModeSelector
@@ -231,7 +225,7 @@ export default function CreatePlanScreen() {
           <View style={styles.dateTimeContainer}>
             <View style={styles.dateRow}>
               <View style={[styles.inputGroup, { flex: 1 }]}>
-                <ThemedText type="caption" style={styles.label}>
+                <ThemedText type="label" style={styles.label}>
                   DATE
                 </ThemedText>
                 <TextInput
@@ -251,7 +245,7 @@ export default function CreatePlanScreen() {
               </View>
 
               <View style={[styles.inputGroup, { width: 110 }]}>
-                <ThemedText type="caption" style={styles.label}>
+                <ThemedText type="label" style={styles.label}>
                   START TIME
                 </ThemedText>
                 <TextInput
@@ -272,7 +266,7 @@ export default function CreatePlanScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <ThemedText type="caption" style={styles.label}>
+              <ThemedText type="label" style={styles.label}>
                 END TIME (OPTIONAL)
               </ThemedText>
               <TextInput
@@ -296,7 +290,7 @@ export default function CreatePlanScreen() {
         {/* Mode B: Multi-option Voting List */}
         {mode === 'vote' && (
           <View style={styles.votingOptionsContainer}>
-            <ThemedText type="caption" style={styles.label}>
+            <ThemedText type="label" style={styles.label}>
               PROPOSED TIMES ({votingOptions.length})
             </ThemedText>
 
@@ -406,7 +400,7 @@ export default function CreatePlanScreen() {
 
         {/* 4. Where? Location */}
         <View style={styles.inputGroup}>
-          <ThemedText type="caption" style={styles.label}>
+          <ThemedText type="label" style={styles.label}>
             WHERE? (OPTIONAL)
           </ThemedText>
           <TextInput
@@ -428,7 +422,7 @@ export default function CreatePlanScreen() {
         {/* 5. Who's invited? */}
         {space && (
           <View style={styles.inputGroup}>
-            <ThemedText type="caption" style={styles.label}>
+            <ThemedText type="label" style={styles.label}>
               {"WHO'S INVITED?"}
             </ThemedText>
             <MemberSelector
@@ -473,17 +467,13 @@ export default function CreatePlanScreen() {
         onConfirm={() => setNotice(null)}
         onCancel={() => setNotice(null)}
       />
-    </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   headerWrapper: {
     paddingHorizontal: 20,
-    paddingTop: 12,
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -493,10 +483,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#8E8D94',
-    fontSize: 11,
-    letterSpacing: 0.6,
     marginBottom: 8,
   },
   textInput: {

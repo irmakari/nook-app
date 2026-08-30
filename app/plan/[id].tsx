@@ -244,7 +244,7 @@ export default function PlanDetailScreen() {
         </View>
 
         {/* Plan Title */}
-        <ThemedText type="hero" style={styles.planTitle}>
+        <ThemedText type="screenTitle" style={styles.planTitle}>
           {plan.title}
         </ThemedText>
 
@@ -734,8 +734,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   planTitle: {
-    fontSize: 28,
-    lineHeight: 34,
     marginBottom: 4,
   },
   creatorRow: {

@@ -3,13 +3,10 @@ import {
   StyleSheet,
   View,
   ScrollView,
-  Pressable,
-  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import * as Haptics from 'expo-haptics';
 
 import { ThemedText } from '@/components/themed-text';
 import { ActivityCalendar } from '@/components/ActivityCalendar';
@@ -27,7 +24,6 @@ export default function ActivityScreen() {
 
   const [activities, setActivities] = useState<Activity[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [showAllFilter, setShowAllFilter] = useState(false);
 
   useEffect(() => {
     const loadActivities = async () => {
@@ -114,21 +110,18 @@ export default function ActivityScreen() {
     return d.getDate();
   });
 
-  // Filter activities for selected date, or show all if showAllFilter is on
-  const filteredActivities = showAllFilter
-    ? activities
-    : activities.filter((act) => {
-        const actDate = new Date(act.createdAt);
-        return (
-          actDate.getFullYear() === selectedDate.getFullYear() &&
-          actDate.getMonth() === selectedDate.getMonth() &&
-          actDate.getDate() === selectedDate.getDate()
-        );
-      });
+  const filteredActivities = activities.filter((act) => {
+    const actDate = new Date(act.createdAt);
+    return (
+      actDate.getFullYear() === selectedDate.getFullYear() &&
+      actDate.getMonth() === selectedDate.getMonth() &&
+      actDate.getDate() === selectedDate.getDate()
+    );
+  });
 
   const displayList =
     filteredActivities.length > 0 ? filteredActivities : activities;
-  const isFilteredEmpty = filteredActivities.length === 0 && !showAllFilter;
+  const isFilteredEmpty = filteredActivities.length === 0;
 
   const dayNumber = selectedDate.getDate();
   const dayName = WEEKDAYS[selectedDate.getDay()];
@@ -152,10 +145,7 @@ export default function ActivityScreen() {
         {/* Interactive Calendar Card */}
         <ActivityCalendar
           selectedDate={selectedDate}
-          onSelectDate={(date) => {
-            setSelectedDate(date);
-            setShowAllFilter(false);
-          }}
+          onSelectDate={setSelectedDate}
           activeDates={activeDayNumbers}
           specialDates={[{ day: 27, icon: 'airplane' }]}
         />
@@ -163,18 +153,18 @@ export default function ActivityScreen() {
         {/* Selected Date Summary Header */}
         <View style={styles.dateSummaryRow}>
           <View style={styles.dateNumberCol}>
-            <ThemedText style={styles.dateSubLabel}>
+            <ThemedText type="label" style={styles.dateSubLabel}>
               {isSelectedToday ? 'TODAY' : 'DATE'}
             </ThemedText>
             <View style={styles.dateTitleRow}>
-              <ThemedText type="hero" style={styles.dateNumberText}>
+              <ThemedText type="display" weight="bold" style={styles.dateNumberText}>
                 {dayNumber}
               </ThemedText>
               <View style={styles.dayMetaCol}>
-                <ThemedText type="title" style={styles.dayNameText}>
+                <ThemedText type="subtitle">
                   {dayName}
                 </ThemedText>
-                <ThemedText type="caption" style={{ color: '#8E8D94' }}>
+                <ThemedText type="caption">
                   {filteredActivities.length}{' '}
                   {filteredActivities.length === 1 ? 'activity' : 'activities'}
                 </ThemedText>
@@ -182,46 +172,13 @@ export default function ActivityScreen() {
             </View>
           </View>
 
-          <Pressable
-            onPress={() => {
-              if (Platform.OS !== 'web') Haptics.selectionAsync();
-              setShowAllFilter(!showAllFilter);
-            }}
-            style={[
-              styles.viewAllPill,
-              {
-                backgroundColor: showAllFilter
-                  ? isDark
-                    ? '#F4F4F5'
-                    : '#18181B'
-                  : isDark
-                  ? '#26262F'
-                  : '#EAE6DF',
-              },
-            ]}>
-            <ThemedText
-              style={[
-                styles.viewAllText,
-                {
-                  color: showAllFilter
-                    ? isDark
-                      ? '#18181B'
-                      : '#FFFFFF'
-                    : isDark
-                    ? '#F4F4F5'
-                    : '#18181B',
-                },
-              ]}>
-              {showAllFilter ? 'Selected' : 'View all'}
-            </ThemedText>
-          </Pressable>
         </View>
 
         {/* Notice when filtered day has no direct items */}
         {isFilteredEmpty ? (
           <View style={styles.emptyNoticeRow}>
             <Ionicons name="calendar-outline" size={14} color="#8E8D94" />
-            <ThemedText style={styles.emptyNoticeText}>
+            <ThemedText type="caption">
               No events on this day · Showing recent space activity
             </ThemedText>
           </View>
@@ -261,10 +218,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   dateSubLabel: {
-    fontSize: 11,
-    fontFamily: 'Poppins_600SemiBold',
-    color: '#8E8D94',
-    letterSpacing: 0.6,
     marginBottom: 2,
   },
   dateTitleRow: {
@@ -275,24 +228,9 @@ const styles = StyleSheet.create({
   dateNumberText: {
     fontSize: 34,
     lineHeight: 38,
-    fontFamily: 'Poppins_700Bold',
   },
   dayMetaCol: {
     justifyContent: 'center',
-  },
-  dayNameText: {
-    fontSize: 16,
-    lineHeight: 20,
-    fontFamily: 'Poppins_600SemiBold',
-  },
-  viewAllPill: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 100,
-  },
-  viewAllText: {
-    fontSize: 12,
-    fontFamily: 'Poppins_600SemiBold',
   },
   emptyNoticeRow: {
     flexDirection: 'row',
@@ -300,11 +238,6 @@ const styles = StyleSheet.create({
     gap: 6,
     marginBottom: 14,
     paddingHorizontal: 4,
-  },
-  emptyNoticeText: {
-    fontSize: 12,
-    fontFamily: 'Poppins_400Regular',
-    color: '#8E8D94',
   },
   timelineList: {
     marginTop: 4,
