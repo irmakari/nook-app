@@ -19,7 +19,9 @@ dotnet user-secrets set "Jwt:SigningKey" "REPLACE_WITH_A_RANDOM_SECRET_AT_LEAST_
 
 Use Supabase's session pooler for a persistent API server, especially when the machine or hosting provider does not support IPv6. Never use the Supabase service-role key in the mobile app.
 
-## Database and run
+## Quick start
+
+From the repository root:
 
 ```bash
 cd backend
@@ -30,13 +32,35 @@ dotnet run --project Nook.Api/Nook.Api.csproj --launch-profile http
 
 The local API is available at `http://localhost:5180`. Its OpenAPI document is at `http://localhost:5180/openapi/v1.json` in Development.
 
-Seed the original development data once after applying migrations:
+Seed the development data once after applying migrations and while the API is running:
 
 ```bash
 curl -X POST http://localhost:5180/api/development/seed
 ```
 
-The seed endpoint is only available in Development and refuses to run when spaces already exist.
+The seed endpoint is only available in Development and refuses to run when spaces already exist. If the database has already been seeded, changes to `Nook.Api/Data/Seed/seed-data.json` will not automatically update existing rows. For local development, clear the existing development data or use a fresh database, then run the seed command again.
+
+## Command reference
+
+Run these from `backend`:
+
+```bash
+# Restore local .NET tools, including dotnet-ef.
+dotnet tool restore
+
+# Apply EF Core migrations to the configured PostgreSQL database.
+dotnet tool run dotnet-ef database update --project Nook.Api/Nook.Api.csproj --startup-project Nook.Api/Nook.Api.csproj
+
+# Start the HTTP API on http://localhost:5180.
+dotnet run --project Nook.Api/Nook.Api.csproj --launch-profile http
+```
+
+Run this from any folder while the API is running:
+
+```bash
+# Load the development seed data.
+curl -X POST http://localhost:5180/api/development/seed
+```
 
 ## Auth endpoints
 
