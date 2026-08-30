@@ -1,0 +1,266 @@
+{
+  "info": {
+    "_postman_id": "0d78cb72-c773-4db9-9845-15671bc1e0a8",
+    "name": "Nook API",
+    "description": "Nook .NET API authentication requests. Register and Login save the JWT automatically. After Forgot Password, copy the reset token from the Development API log into the resetToken collection variable.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5180", "type": "string" },
+    { "key": "email", "value": "nook.user@example.com", "type": "string" },
+    { "key": "password", "value": "NookPass123", "type": "string" },
+    { "key": "newPassword", "value": "NewNookPass123", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "resetToken", "value": "", "type": "string" },
+    { "key": "spaceId", "value": "ev", "type": "string" },
+    { "key": "planId", "value": "plan-2", "type": "string" },
+    { "key": "planOptionId", "value": "", "type": "string" },
+    { "key": "pollId", "value": "poll-1", "type": "string" },
+    { "key": "pollOptionId", "value": "popt-1", "type": "string" },
+    { "key": "listId", "value": "list-3", "type": "string" },
+    { "key": "listItemId", "value": "item-l3-1", "type": "string" },
+    { "key": "taskId", "value": "task-1", "type": "string" },
+    { "key": "noteId", "value": "note-1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  pm.collectionVariables.set('accessToken', pm.response.json().accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/register"
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  pm.collectionVariables.set('accessToken', pm.response.json().accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Current User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/auth/me"
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/forgot-password"
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"{{newPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/reset-password"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Development",
+      "item": [
+        {
+          "name": "Seed Database",
+          "request": { "method": "POST", "url": "{{baseUrl}}/api/development/seed" }
+        }
+      ]
+    },
+    {
+      "name": "Spaces",
+      "item": [
+        { "name": "Get Spaces", "request": { "method": "GET", "url": "{{baseUrl}}/api/spaces" } },
+        { "name": "Get Space", "request": { "method": "GET", "url": "{{baseUrl}}/api/spaces/{{spaceId}}" } },
+        {
+          "name": "Create Space",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Postman Space\",\n  \"icon\": \"people\",\n  \"accentColor\": \"#7FB9E6\",\n  \"type\": \"friends\",\n  \"sections\": [\"Plans\", \"Polls\", \"Shared Lists\"]\n}" },
+            "url": "{{baseUrl}}/api/spaces"
+          }
+        },
+        { "name": "Get Members", "request": { "method": "GET", "url": "{{baseUrl}}/api/spaces/{{spaceId}}/members" } },
+        {
+          "name": "Add Member",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"id\": \"u10\",\n  \"name\": \"Berk\",\n  \"initials\": \"BK\"\n}" },
+            "url": "{{baseUrl}}/api/spaces/{{spaceId}}/members"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Plans",
+      "item": [
+        { "name": "Get Plans", "request": { "method": "GET", "url": "{{baseUrl}}/api/plans?spaceId={{spaceId}}" } },
+        { "name": "Get Plan", "request": { "method": "GET", "url": "{{baseUrl}}/api/plans/{{planId}}" } },
+        {
+          "name": "Create Plan",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"spaceId\": \"{{spaceId}}\",\n  \"title\": \"Postman Plan\",\n  \"location\": \"Kadıköy\",\n  \"mode\": \"know\",\n  \"singleDate\": \"2026-09-12\",\n  \"singleTime\": \"19:00\",\n  \"invitedMembers\": []\n}" },
+            "url": "{{baseUrl}}/api/plans"
+          }
+        },
+        {
+          "name": "RSVP Plan",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"user\": { \"id\": \"user-irmak\", \"name\": \"Irmak\", \"initials\": \"IR\" },\n  \"status\": \"going\"\n}" },
+            "url": "{{baseUrl}}/api/plans/{{planId}}/rsvp"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Polls",
+      "item": [
+        { "name": "Get Polls", "request": { "method": "GET", "url": "{{baseUrl}}/api/polls?spaceId={{spaceId}}" } },
+        { "name": "Get Poll", "request": { "method": "GET", "url": "{{baseUrl}}/api/polls/{{pollId}}" } },
+        {
+          "name": "Create Poll",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"spaceId\": \"{{spaceId}}\",\n  \"question\": \"Postman poll?\",\n  \"options\": [\"Option A\", \"Option B\"],\n  \"allowMultiple\": false,\n  \"membersCanAddOptions\": true\n}" },
+            "url": "{{baseUrl}}/api/polls"
+          }
+        },
+        { "name": "Close Poll", "request": { "method": "POST", "url": "{{baseUrl}}/api/polls/{{pollId}}/close" } }
+      ]
+    },
+    {
+      "name": "Lists",
+      "item": [
+        { "name": "Get Lists", "request": { "method": "GET", "url": "{{baseUrl}}/api/lists?spaceId={{spaceId}}" } },
+        { "name": "Get List", "request": { "method": "GET", "url": "{{baseUrl}}/api/lists/{{listId}}" } },
+        {
+          "name": "Create List",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"spaceId\": \"{{spaceId}}\",\n  \"name\": \"Postman List\",\n  \"template\": \"blank\"\n}" },
+            "url": "{{baseUrl}}/api/lists"
+          }
+        },
+        {
+          "name": "Add List Item",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"text\": \"Postman item\",\n  \"user\": { \"id\": \"user-irmak\", \"name\": \"Irmak\", \"initials\": \"IR\" }\n}" },
+            "url": "{{baseUrl}}/api/lists/{{listId}}/items"
+          }
+        },
+        { "name": "Clear Completed", "request": { "method": "POST", "url": "{{baseUrl}}/api/lists/{{listId}}/clear-completed" } }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        { "name": "Get Tasks", "request": { "method": "GET", "url": "{{baseUrl}}/api/tasks?spaceId={{spaceId}}" } },
+        {
+          "name": "Create Task",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"spaceId\": \"{{spaceId}}\",\n  \"title\": \"Postman task\",\n  \"dueAt\": \"today\"\n}" },
+            "url": "{{baseUrl}}/api/tasks"
+          }
+        },
+        {
+          "name": "Toggle Task",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"user\": { \"id\": \"user-irmak\", \"name\": \"Irmak\", \"initials\": \"IR\" }\n}" },
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}/toggle"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notes",
+      "item": [
+        { "name": "Get Notes", "request": { "method": "GET", "url": "{{baseUrl}}/api/notes?spaceId={{spaceId}}" } },
+        {
+          "name": "Create Note",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"spaceId\": \"{{spaceId}}\",\n  \"title\": \"Postman Note\",\n  \"content\": \"Created from Postman\",\n  \"isPinned\": false\n}" },
+            "url": "{{baseUrl}}/api/notes"
+          }
+        },
+        { "name": "Toggle Pin", "request": { "method": "POST", "url": "{{baseUrl}}/api/notes/{{noteId}}/toggle-pin" } }
+      ]
+    },
+    {
+      "name": "Activities",
+      "item": [
+        { "name": "Get Activities", "request": { "method": "GET", "url": "{{baseUrl}}/api/activities" } }
+      ]
+    }
+  ]
+}

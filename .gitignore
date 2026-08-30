@@ -36,6 +36,11 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# .NET
+.dotnet-cli/
+**/bin/
+**/obj/
+
 app-example
 
 # generated native folders
