@@ -114,6 +114,7 @@ export interface Space {
   recentActivities?: SpaceActivity[];
   recentActivity?: string;
   recentActivityTime?: string;
+  isPinned?: boolean;
 }
 
 export interface CreateSpacePayload {
@@ -290,12 +291,38 @@ export interface UpdateNotePayload {
   isPinned?: boolean;
 }
 
-const API_URL =
-  process.env.EXPO_PUBLIC_API_URL ??
-  (Platform.OS === 'android' ? 'http://10.0.2.2:5180/api' : 'http://localhost:5180/api');
+import Constants from 'expo-constants';
+
+const getApiUrl = () => {
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
+
+  const isPhysicalDevice = Constants.isDevice;
+
+  if (isPhysicalDevice) {
+    const hostUri = Constants.expoConfig?.hostUri || Constants.manifest2?.extra?.expoGo?.debuggerHost;
+    if (hostUri) {
+      const host = hostUri.split(':')[0];
+      if (host) {
+        return `http://${host}:5180/api`;
+      }
+    }
+  }
+
+  if (Platform.OS === 'android') {
+    return 'http://10.0.2.2:5180/api';
+  }
+
+  return 'http://127.0.0.1:5180/api';
+};
+
+const API_URL = getApiUrl();
 
 const ACCESS_TOKEN_KEY = 'accessToken';
 const SESSION_USER_KEY = 'sessionUser';
+const PINNED_SPACES_KEY = 'pinnedSpaces';
+const SPACE_ORDER_KEY = 'spaceOrder';
 
 const DEFAULT_USER: User = {
   id: 'user-irmak',
@@ -311,7 +338,100 @@ class SpaceService {
   private hasLoadedSession = false;
 
   private spaces: Space[] = [];
+  private pinnedSpaceIds: Set<string> = new Set();
+  private hasLoadedPinned = false;
+  private customSpaceOrder: string[] = [];
+  private hasLoadedCustomOrder = false;
   private listeners: (() => void)[] = [];
+
+  private async loadPinnedSpaces(): Promise<void> {
+    if (this.hasLoadedPinned) return;
+    try {
+      const stored = await getSessionValue(PINNED_SPACES_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as string[];
+        this.pinnedSpaceIds = new Set(parsed);
+      }
+    } catch {
+      // fallback
+    } finally {
+      this.hasLoadedPinned = true;
+    }
+  }
+
+  private async loadCustomSpaceOrder(): Promise<void> {
+    if (this.hasLoadedCustomOrder) return;
+    try {
+      const stored = await getSessionValue(SPACE_ORDER_KEY);
+      if (stored) {
+        this.customSpaceOrder = JSON.parse(stored) as string[];
+      }
+    } catch {
+      // fallback
+    } finally {
+      this.hasLoadedCustomOrder = true;
+    }
+  }
+
+  private processSpaces(rawSpaces: Space[]): Space[] {
+    const list = rawSpaces.map((s) => ({
+      ...s,
+      isPinned: this.pinnedSpaceIds.has(s.id),
+    }));
+
+    if (this.customSpaceOrder.length > 0) {
+      const orderMap = new Map(this.customSpaceOrder.map((id, index) => [id, index]));
+      return list.sort((a, b) => {
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+
+        const indexA = orderMap.has(a.id) ? orderMap.get(a.id)! : 999;
+        const indexB = orderMap.has(b.id) ? orderMap.get(b.id)! : 999;
+        return indexA - indexB;
+      });
+    }
+
+    return list.sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      return 0;
+    });
+  }
+
+  public async togglePinSpace(spaceId: string): Promise<Space[]> {
+    await this.loadPinnedSpaces();
+    await this.loadCustomSpaceOrder();
+    if (this.pinnedSpaceIds.has(spaceId)) {
+      this.pinnedSpaceIds.delete(spaceId);
+    } else {
+      this.pinnedSpaceIds.add(spaceId);
+    }
+    await setSessionValue(PINNED_SPACES_KEY, JSON.stringify([...this.pinnedSpaceIds]));
+    this.spaces = this.processSpaces(this.spaces);
+    this.notify();
+    return this.spaces;
+  }
+
+  public async moveSpaceToTop(spaceId: string): Promise<Space[]> {
+    await this.loadPinnedSpaces();
+    await this.loadCustomSpaceOrder();
+    const currentIds = this.spaces.map((s) => s.id);
+    const filtered = currentIds.filter((id) => id !== spaceId);
+    this.customSpaceOrder = [spaceId, ...filtered];
+    await setSessionValue(SPACE_ORDER_KEY, JSON.stringify(this.customSpaceOrder));
+    this.spaces = this.processSpaces(this.spaces);
+    this.notify();
+    return this.spaces;
+  }
+
+  public async reorderSpaces(newOrderIds: string[]): Promise<Space[]> {
+    await this.loadPinnedSpaces();
+    this.customSpaceOrder = newOrderIds;
+    await setSessionValue(SPACE_ORDER_KEY, JSON.stringify(this.customSpaceOrder));
+    this.spaces = this.processSpaces(this.spaces);
+    this.notify();
+    return this.spaces;
+  }
 
   public async restoreSession(): Promise<User | null> {
     const [accessToken, storedUser] = await Promise.all([
@@ -446,14 +566,42 @@ class SpaceService {
   }
 
   public async getSpaces(): Promise<Space[]> {
-    this.spaces = await this.request<Space[]>('/spaces');
+    await this.loadPinnedSpaces();
+    await this.loadCustomSpaceOrder();
+    if (this.spaces.length > 0) {
+      this.request<Space[]>('/spaces').then((spaces) => {
+        if (spaces) {
+          this.spaces = this.processSpaces(spaces);
+          this.notify();
+        }
+      }).catch(() => {});
+      return this.processSpaces(this.spaces);
+    }
+    const raw = await this.request<Space[]>('/spaces');
+    this.spaces = this.processSpaces(raw);
     return this.spaces;
   }
 
   public async getSpaceById(id: string): Promise<Space | undefined> {
+    await this.loadPinnedSpaces();
+    await this.loadCustomSpaceOrder();
+    const cached = this.spaces.find((item) => item.id === id);
+    if (cached) {
+      this.request<Space | undefined>(`/spaces/${encodeURIComponent(id)}`, undefined, true).then((space) => {
+        if (space) {
+          const updated = [space, ...this.spaces.filter((item) => item.id !== space.id)];
+          this.spaces = this.processSpaces(updated);
+          this.notify();
+        }
+      }).catch(() => {});
+      return cached;
+    }
     const space = await this.request<Space | undefined>(`/spaces/${encodeURIComponent(id)}`, undefined, true);
-    if (space) this.spaces = [space, ...this.spaces.filter((item) => item.id !== space.id)];
-    return space;
+    if (space) {
+      const updated = [space, ...this.spaces.filter((item) => item.id !== space.id)];
+      this.spaces = this.processSpaces(updated);
+    }
+    return space ? { ...space, isPinned: this.pinnedSpaceIds.has(space.id) } : undefined;
   }
 
   public createSpace(payload: CreateSpacePayload): Promise<Space> { return this.mutate('/spaces', { method: 'POST', body: JSON.stringify(payload) }); }
