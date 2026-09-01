@@ -82,6 +82,7 @@ export default function CreateTodoScreen() {
       });
     } catch (err) {
       console.error('Error creating to-do:', err);
+      setNotice(err instanceof Error ? err.message : 'Error creating to-do.');
     } finally {
       setIsSubmitting(false);
     }

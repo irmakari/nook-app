@@ -59,7 +59,7 @@ const SPACE_OPTIONS: SpaceOptionData[] = [
     title: 'Partner',
     description: 'For you two',
     defaultName: 'Manita',
-    defaultColor: nookSpaceColors.softLilac,
+    defaultColor: nookSpaceColors.raspberryRose,
     defaultSections: ['Plans', 'Shared Lists', 'Notes'],
   },
   {
@@ -216,7 +216,7 @@ export default function CreateSpaceScreen() {
   const softTint = getAccentTint(accentColor, isDark ? 0.22 : 0.15);
 
   return (
-    <ScreenContainer variant="modal">
+    <ScreenContainer>
       {/* Screen Header */}
       <View style={styles.headerWrapper}>
         <ScreenHeader
@@ -263,6 +263,7 @@ export default function CreateSpaceScreen() {
                 title={opt.title}
                 description={opt.description}
                 selected={selectedType === opt.type}
+                accentColor={opt.defaultColor}
                 onSelect={handleSelectType}
               />
             ))}

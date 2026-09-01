@@ -21,6 +21,8 @@ import { Space, spaceService } from '@/services/space-service';
 import { getAccentTint } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
+import { ConfirmModal } from '@/components/ConfirmModal';
+
 export default function CreateNoteScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -33,6 +35,7 @@ export default function CreateNoteScreen() {
   const [content, setContent] = useState('');
   const [isPinned, setIsPinned] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     const loadSpace = async () => {
@@ -71,6 +74,7 @@ export default function CreateNoteScreen() {
       });
     } catch (err) {
       console.error('Error creating note:', err);
+      setNotice(err instanceof Error ? err.message : 'Error creating note.');
     } finally {
       setIsSubmitting(false);
     }
@@ -104,7 +108,7 @@ export default function CreateNoteScreen() {
             <TextInput
               value={title}
               onChangeText={setTitle}
-              placeholder="e.g. Wi-Fi password, Trip details"
+              placeholder="e.g. Apartment Door Code, Wifi Info..."
               placeholderTextColor={isDark ? '#71717A' : '#A1A1AA'}
               style={[
                 styles.titleInput,
@@ -114,10 +118,11 @@ export default function CreateNoteScreen() {
                   borderColor: isDark ? '#26262B' : '#EBE7E0',
                 },
               ]}
+              autoFocus
             />
           </View>
 
-          {/* Auto-growing Note Content */}
+          {/* Note Content Input */}
           <View style={styles.inputGroup}>
             <ThemedText type="label" style={styles.label}>
               NOTE
@@ -125,7 +130,7 @@ export default function CreateNoteScreen() {
             <TextInput
               value={content}
               onChangeText={setContent}
-              placeholder="Write something..."
+              placeholder="Write something together..."
               placeholderTextColor={isDark ? '#71717A' : '#A1A1AA'}
               multiline
               textAlignVertical="top"
@@ -137,11 +142,10 @@ export default function CreateNoteScreen() {
                   borderColor: isDark ? '#26262B' : '#EBE7E0',
                 },
               ]}
-              autoFocus
             />
           </View>
 
-          {/* Pin Note Option */}
+          {/* Pin Note Toggle */}
           <Pressable
             onPress={() => {
               if (Platform.OS !== 'web') Haptics.selectionAsync();
@@ -159,7 +163,7 @@ export default function CreateNoteScreen() {
                   ? accentColor
                   : isDark
                   ? '#26262B'
-                  : '#EFECE6',
+                  : '#EBE7E0',
               },
             ]}>
             <View style={styles.pinTextWrapper}>
@@ -168,20 +172,8 @@ export default function CreateNoteScreen() {
                 size={18}
                 color={isPinned ? accentColor : isDark ? '#A1A1AA' : '#71717A'}
               />
-              <ThemedText
-                style={[
-                  styles.pinLabel,
-                  {
-                    color: isPinned
-                      ? isDark
-                        ? '#F4F4F5'
-                        : '#18181B'
-                      : isDark
-                      ? '#A1A1AA'
-                      : '#71717A',
-                  },
-                ]}>
-                Pin note to top of Space
+              <ThemedText style={styles.pinLabel}>
+                Pin note to top of space
               </ThemedText>
             </View>
 
@@ -223,6 +215,18 @@ export default function CreateNoteScreen() {
             disabled={!content.trim()}
           />
         </View>
+
+        <ConfirmModal
+          visible={!!notice}
+          title="Notice"
+          message={notice || ''}
+          confirmText="Got it"
+          cancelText=""
+          accentColor={accentColor}
+          icon="information-circle-outline"
+          onConfirm={() => setNotice(null)}
+          onCancel={() => setNotice(null)}
+        />
       </ScreenContainer>
     </KeyboardAvoidingView>
   );

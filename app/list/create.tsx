@@ -23,6 +23,8 @@ import {
 import { Space, spaceService } from '@/services/space-service';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
+import { ConfirmModal } from '@/components/ConfirmModal';
+
 export default function CreateListScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -35,6 +37,7 @@ export default function CreateListScreen() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     const loadSpace = async () => {
@@ -80,6 +83,7 @@ export default function CreateListScreen() {
       });
     } catch (err) {
       console.error('Error creating list:', err);
+      setNotice(err instanceof Error ? err.message : 'Error creating list.');
     } finally {
       setIsSubmitting(false);
     }
@@ -102,26 +106,28 @@ export default function CreateListScreen() {
           styles.scrollContent,
           { paddingBottom: Math.max(insets.bottom + 90, 110) },
         ]}>
-        {/* Template Selector Grid */}
+        {/* Template Selector */}
         <View style={styles.sectionBlock}>
           <ThemedText type="label" style={styles.label}>
-            CHOOSE A TEMPLATE
+            TYPE OF LIST
           </ThemedText>
-
           <View style={styles.templatesGrid}>
-            {LIST_TEMPLATES_ARRAY.map((tpl) => (
+            {LIST_TEMPLATES_ARRAY.map((t) => (
               <ListTemplateOption
-                key={tpl.id}
-                template={tpl}
-                isSelected={template === tpl.id}
+                key={t.type}
+                template={t.type}
+                title={t.title}
+                description={t.description}
+                iconName={t.iconName}
+                selected={template === t.type}
+                onSelect={() => handleSelectTemplate(t.type)}
                 accentColor={accentColor}
-                onSelect={handleSelectTemplate}
               />
             ))}
           </View>
         </View>
 
-        {/* List Name */}
+        {/* List Name Input */}
         <View style={styles.inputGroup}>
           <ThemedText type="label" style={styles.label}>
             LIST NAME
@@ -142,15 +148,15 @@ export default function CreateListScreen() {
           />
         </View>
 
-        {/* Optional Description */}
+        {/* Description Input */}
         <View style={styles.inputGroup}>
           <ThemedText type="label" style={styles.label}>
-            SHORT DESCRIPTION (OPTIONAL)
+            DESCRIPTION (OPTIONAL)
           </ThemedText>
           <TextInput
             value={description}
             onChangeText={setDescription}
-            placeholder="e.g. Cinema night suggestions, Kaş trip packing"
+            placeholder="e.g. Movies for rainy days, Kaş trip packing..."
             placeholderTextColor={isDark ? '#71717A' : '#A1A1AA'}
             style={[
               styles.textInput,
@@ -164,7 +170,7 @@ export default function CreateListScreen() {
         </View>
       </ScrollView>
 
-      {/* Sticky Bottom Action Bar */}
+      {/* Bottom Action Bar */}
       <View
         style={[
           styles.bottomBar,
@@ -182,6 +188,18 @@ export default function CreateListScreen() {
           backgroundColor={accentColor}
         />
       </View>
+
+      <ConfirmModal
+        visible={!!notice}
+        title="Notice"
+        message={notice || ''}
+        confirmText="Got it"
+        cancelText=""
+        accentColor={accentColor}
+        icon="information-circle-outline"
+        onConfirm={() => setNotice(null)}
+        onCancel={() => setNotice(null)}
+      />
     </ScreenContainer>
   );
 }

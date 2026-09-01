@@ -28,14 +28,16 @@ export function EditSpaceModal({
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const [name, setName] = useState(space.name);
-  const [tagline, setTagline] = useState(space.tagline || '');
-  const [accentColor, setAccentColor] = useState(space.accentColor || nookSpaceColors.sky);
+  const [name, setName] = useState(space?.name || '');
+  const [tagline, setTagline] = useState(space?.tagline || '');
+  const [accentColor, setAccentColor] = useState(space?.accentColor || nookSpaceColors.sky);
 
   useEffect(() => {
-    setName(space.name);
-    setTagline(space.tagline || '');
-    setAccentColor(space.accentColor || nookSpaceColors.sky);
+    if (space) {
+      setName(space.name);
+      setTagline(space.tagline || '');
+      setAccentColor(space.accentColor || nookSpaceColors.sky);
+    }
   }, [space, visible]);
 
   const handleSave = () => {

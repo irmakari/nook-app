@@ -142,6 +142,7 @@ export default function CreatePlanScreen() {
       });
     } catch (err) {
       console.error('Error creating plan:', err);
+      setNotice(err instanceof Error ? err.message : 'Error creating plan.');
     } finally {
       setIsSubmitting(false);
     }

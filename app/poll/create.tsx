@@ -116,6 +116,7 @@ export default function CreatePollScreen() {
       });
     } catch (err) {
       console.error('Error creating poll:', err);
+      setNotice(err instanceof Error ? err.message : 'Error creating poll.');
     } finally {
       setIsSubmitting(false);
     }
