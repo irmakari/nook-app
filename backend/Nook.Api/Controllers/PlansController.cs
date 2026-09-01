@@ -54,7 +54,7 @@ public sealed class PlansController(AppDbContext dbContext, ActivityWriter activ
             Location = request.Location?.Trim(), CreatedBy = currentUser.Name,
             InvitedMemberIdsJson = DomainJson.Write((request.InvitedMembers ?? []).Select(x => x.Name).ToList()),
             Status = voting ? "voting" : "confirmed",
-            StartAt = request.SingleDate is null ? null : $"{request.SingleDate}T{request.SingleTime ?? "12:00"}:00Z",
+            StartAt = (request.SingleDate is not null && DateTime.TryParse(request.SingleDate, out _)) ? $"{request.SingleDate}T{request.SingleTime ?? "12:00"}:00Z" : null,
             EndAt = request.EndTime, DateDisplay = dateDisplay, CreatedAtUtc = now,
             OptionsJson = DomainJson.Write(options), RsvpsJson = DomainJson.Write(rsvps), AllowMultiple = request.AllowMultiple
         };
