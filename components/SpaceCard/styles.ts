@@ -1,10 +1,46 @@
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
+  containerWrapper: {
+    position: 'relative',
+    marginBottom: 12,
+  },
   card: {
     borderRadius: 20,
     padding: 16,
-    marginBottom: 12,
+    position: 'relative',
+  },
+  pinBadge: {
+    position: 'absolute',
+    top: -6,
+    right: 16,
+    backgroundColor: '#18181B',
+    borderRadius: 11,
+    width: 22,
+    height: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+  deleteActionBox: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 65,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  deleteButtonInner: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   mainRow: {
     flexDirection: 'row',

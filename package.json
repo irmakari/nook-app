@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
+    "backend": "cd $(git rev-parse --show-toplevel)/backend && ASPNETCORE_ENVIRONMENT=Development dotnet run --project Nook.Api/Nook.Api.csproj --urls http://0.0.0.0:5180",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",

@@ -102,8 +102,8 @@ export default function RootLayout() {
             name="create-space"
             options={{
               headerShown: false,
-              presentation: 'modal',
-              animation: 'slide_from_bottom',
+              presentation: 'card',
+              animation: 'slide_from_right',
             }}
           />
           <Stack.Screen

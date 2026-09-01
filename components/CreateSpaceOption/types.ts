@@ -6,5 +6,6 @@ export interface CreateSpaceOptionProps {
   title: string;
   description: string;
   selected: boolean;
+  accentColor?: string;
   onSelect: (type: SpaceType) => void;
 }

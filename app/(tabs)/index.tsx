@@ -13,6 +13,10 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { ThemedText } from '@/components/themed-text';
 import { SpaceCard } from '@/components/SpaceCard';
+import { ConfirmModal } from '@/components/ConfirmModal';
+import { SpaceActionSheet } from '@/components/SpaceActionSheet';
+import { EditSpaceModal } from '@/components/EditSpaceModal';
+import { ReorderSpacesModal } from '@/components/ReorderSpacesModal';
 import { nookSpaceColors } from '@/constants/theme';
 import { Space, spaceService } from '@/services/space-service';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -24,6 +28,10 @@ export default function HomeScreen() {
   const isDark = colorScheme === 'dark';
 
   const [spaces, setSpaces] = useState<Space[]>([]);
+  const [spaceToDelete, setSpaceToDelete] = useState<Space | null>(null);
+  const [actionSheetSpace, setActionSheetSpace] = useState<Space | null>(null);
+  const [editModalSpace, setEditModalSpace] = useState<Space | null>(null);
+  const [reorderModalVisible, setReorderModalVisible] = useState(false);
 
   useEffect(() => {
     // Load spaces from service layer
@@ -61,6 +69,53 @@ export default function HomeScreen() {
       pathname: '/space/[id]',
       params: { id: spaceId },
     });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (spaceToDelete) {
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      await spaceService.deleteSpace(spaceToDelete.id);
+      setSpaceToDelete(null);
+      const updated = await spaceService.getSpaces();
+      setSpaces(updated);
+    }
+  };
+
+  const handleTogglePin = async (targetSpace: Space) => {
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync();
+    }
+    const updated = await spaceService.togglePinSpace(targetSpace.id);
+    setSpaces(updated);
+  };
+
+  const handleMoveToTop = async (targetSpace: Space) => {
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync();
+    }
+    const updated = await spaceService.moveSpaceToTop(targetSpace.id);
+    setSpaces(updated);
+  };
+
+  const handleSaveReorder = async (reordered: Space[]) => {
+    const ids = reordered.map((s) => s.id);
+    const updated = await spaceService.reorderSpaces(ids);
+    setSpaces(updated);
+  };
+
+  const handleSaveEdit = async (updates: {
+    name: string;
+    tagline?: string;
+    accentColor: string;
+  }) => {
+    if (editModalSpace) {
+      await spaceService.updateSpace(editModalSpace.id, updates);
+      setEditModalSpace(null);
+      const updated = await spaceService.getSpaces();
+      setSpaces(updated);
+    }
   };
 
   return (
@@ -141,10 +196,56 @@ export default function HomeScreen() {
               key={space.id}
               space={space}
               onPress={() => handleOpenSpace(space.id)}
+              onDelete={(targetSpace) => setSpaceToDelete(targetSpace)}
+              onLongPress={(targetSpace) => setActionSheetSpace(targetSpace)}
             />
           ))}
         </View>
       </ScrollView>
+
+      {/* Quick Action Sheet on Long Press */}
+      <SpaceActionSheet
+        visible={!!actionSheetSpace}
+        space={actionSheetSpace}
+        onClose={() => setActionSheetSpace(null)}
+        onTogglePin={handleTogglePin}
+        onMoveToTop={handleMoveToTop}
+        onOpenReorder={() => setReorderModalVisible(true)}
+        onEditSpace={(targetSpace) => setEditModalSpace(targetSpace)}
+        onDeleteSpace={(targetSpace) => setSpaceToDelete(targetSpace)}
+      />
+
+      {/* Reorder Spaces Modal */}
+      <ReorderSpacesModal
+        visible={reorderModalVisible}
+        spaces={spaces}
+        onClose={() => setReorderModalVisible(false)}
+        onSave={handleSaveReorder}
+      />
+
+      {/* Edit Space Modal */}
+      {editModalSpace ? (
+        <EditSpaceModal
+          visible={!!editModalSpace}
+          space={editModalSpace}
+          onClose={() => setEditModalSpace(null)}
+          onSave={handleSaveEdit}
+        />
+      ) : null}
+
+      {/* Delete Space Confirm Modal */}
+      <ConfirmModal
+        visible={!!spaceToDelete}
+        title="Delete Space"
+        message={`Are you sure you want to delete "${spaceToDelete?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDestructive={true}
+        accentColor={spaceToDelete?.accentColor || '#FF3B30'}
+        icon="trash-outline"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setSpaceToDelete(null)}
+      />
     </View>
   );
 }
