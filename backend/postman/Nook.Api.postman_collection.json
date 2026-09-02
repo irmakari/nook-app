@@ -2,19 +2,23 @@
   "info": {
     "_postman_id": "0d78cb72-c773-4db9-9845-15671bc1e0a8",
     "name": "Nook API",
-    "description": "Nook .NET API authentication requests. Register and Login save the JWT automatically. After Forgot Password, copy the reset token from the Development API log into the resetToken collection variable.",
+    "description": "Complete Postman collection for Nook .NET API. Supports Authentication (Register with Name & Phone, Email Verification, Login, Forgot & Reset Password), Spaces, Plans, Polls, Lists, Tasks, Notes, and Activities.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:5180", "type": "string" },
     { "key": "email", "value": "nook.user@example.com", "type": "string" },
     { "key": "password", "value": "NookPass123", "type": "string" },
+    { "key": "fullName", "value": "Irmak Arı", "type": "string" },
+    { "key": "phone", "value": "+90 555 123 45 67", "type": "string" },
+    { "key": "verificationCode", "value": "123456", "type": "string" },
     { "key": "newPassword", "value": "NewNookPass123", "type": "string" },
     { "key": "accessToken", "value": "", "type": "string" },
     { "key": "resetToken", "value": "", "type": "string" },
     { "key": "spaceId", "value": "ev", "type": "string" },
+    { "key": "memberId", "value": "u10", "type": "string" },
     { "key": "planId", "value": "plan-2", "type": "string" },
-    { "key": "planOptionId", "value": "", "type": "string" },
+    { "key": "planOptionId", "value": "popt-1", "type": "string" },
     { "key": "pollId", "value": "poll-1", "type": "string" },
     { "key": "pollOptionId", "value": "popt-1", "type": "string" },
     { "key": "listId", "value": "list-3", "type": "string" },
@@ -51,9 +55,33 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"fullName\": \"{{fullName}}\",\n  \"phoneNumber\": \"{{phone}}\"\n}"
             },
             "url": "{{baseUrl}}/api/auth/register"
+          }
+        },
+        {
+          "name": "Send Verification Code",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/send-verification"
+          }
+        },
+        {
+          "name": "Verify Code",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"code\": \"{{verificationCode}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/verify-code"
           }
         },
         {
@@ -87,7 +115,7 @@
           }
         },
         {
-          "name": "Current User",
+          "name": "Current User (Me)",
           "request": {
             "auth": {
               "type": "bearer",
@@ -136,7 +164,7 @@
       "name": "Spaces",
       "item": [
         { "name": "Get Spaces", "request": { "method": "GET", "url": "{{baseUrl}}/api/spaces" } },
-        { "name": "Get Space", "request": { "method": "GET", "url": "{{baseUrl}}/api/spaces/{{spaceId}}" } },
+        { "name": "Get Space by ID", "request": { "method": "GET", "url": "{{baseUrl}}/api/spaces/{{spaceId}}" } },
         {
           "name": "Create Space",
           "request": {
@@ -146,23 +174,34 @@
             "url": "{{baseUrl}}/api/spaces"
           }
         },
-        { "name": "Get Members", "request": { "method": "GET", "url": "{{baseUrl}}/api/spaces/{{spaceId}}/members" } },
         {
-          "name": "Add Member",
+          "name": "Update Space",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated Space Name\",\n  \"tagline\": \"New space tagline\",\n  \"accentColor\": \"#F2619C\"\n}" },
+            "url": "{{baseUrl}}/api/spaces/{{spaceId}}"
+          }
+        },
+        { "name": "Delete Space", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/spaces/{{spaceId}}" } },
+        { "name": "Get Space Members", "request": { "method": "GET", "url": "{{baseUrl}}/api/spaces/{{spaceId}}/members" } },
+        {
+          "name": "Add Member to Space",
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": { "mode": "raw", "raw": "{\n  \"id\": \"u10\",\n  \"name\": \"Berk\",\n  \"initials\": \"BK\"\n}" },
             "url": "{{baseUrl}}/api/spaces/{{spaceId}}/members"
           }
-        }
+        },
+        { "name": "Remove Member from Space", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/spaces/{{spaceId}}/members/{{memberId}}" } }
       ]
     },
     {
       "name": "Plans",
       "item": [
         { "name": "Get Plans", "request": { "method": "GET", "url": "{{baseUrl}}/api/plans?spaceId={{spaceId}}" } },
-        { "name": "Get Plan", "request": { "method": "GET", "url": "{{baseUrl}}/api/plans/{{planId}}" } },
+        { "name": "Get Plan by ID", "request": { "method": "GET", "url": "{{baseUrl}}/api/plans/{{planId}}" } },
         {
           "name": "Create Plan",
           "request": {
@@ -173,6 +212,24 @@
           }
         },
         {
+          "name": "Vote Plan Option",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"user\": { \"id\": \"user-irmak\", \"name\": \"Irmak\", \"initials\": \"IR\" }\n}" },
+            "url": "{{baseUrl}}/api/plans/{{planId}}/options/{{planOptionId}}/vote"
+          }
+        },
+        {
+          "name": "Finalize Plan",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"optionId\": \"{{planOptionId}}\"\n}" },
+            "url": "{{baseUrl}}/api/plans/{{planId}}/finalize"
+          }
+        },
+        {
           "name": "RSVP Plan",
           "request": {
             "method": "POST",
@@ -180,14 +237,15 @@
             "body": { "mode": "raw", "raw": "{\n  \"user\": { \"id\": \"user-irmak\", \"name\": \"Irmak\", \"initials\": \"IR\" },\n  \"status\": \"going\"\n}" },
             "url": "{{baseUrl}}/api/plans/{{planId}}/rsvp"
           }
-        }
+        },
+        { "name": "Delete Plan", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/plans/{{planId}}" } }
       ]
     },
     {
       "name": "Polls",
       "item": [
         { "name": "Get Polls", "request": { "method": "GET", "url": "{{baseUrl}}/api/polls?spaceId={{spaceId}}" } },
-        { "name": "Get Poll", "request": { "method": "GET", "url": "{{baseUrl}}/api/polls/{{pollId}}" } },
+        { "name": "Get Poll by ID", "request": { "method": "GET", "url": "{{baseUrl}}/api/polls/{{pollId}}" } },
         {
           "name": "Create Poll",
           "request": {
@@ -197,14 +255,33 @@
             "url": "{{baseUrl}}/api/polls"
           }
         },
-        { "name": "Close Poll", "request": { "method": "POST", "url": "{{baseUrl}}/api/polls/{{pollId}}/close" } }
+        {
+          "name": "Add Poll Option",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"text\": \"Option C\",\n  \"user\": { \"id\": \"user-irmak\", \"name\": \"Irmak\", \"initials\": \"IR\" }\n}" },
+            "url": "{{baseUrl}}/api/polls/{{pollId}}/options"
+          }
+        },
+        {
+          "name": "Vote Poll Option",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"user\": { \"id\": \"user-irmak\", \"name\": \"Irmak\", \"initials\": \"IR\" }\n}" },
+            "url": "{{baseUrl}}/api/polls/{{pollId}}/options/{{pollOptionId}}/vote"
+          }
+        },
+        { "name": "Close Poll", "request": { "method": "POST", "url": "{{baseUrl}}/api/polls/{{pollId}}/close" } },
+        { "name": "Delete Poll", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/polls/{{pollId}}" } }
       ]
     },
     {
       "name": "Lists",
       "item": [
         { "name": "Get Lists", "request": { "method": "GET", "url": "{{baseUrl}}/api/lists?spaceId={{spaceId}}" } },
-        { "name": "Get List", "request": { "method": "GET", "url": "{{baseUrl}}/api/lists/{{listId}}" } },
+        { "name": "Get List by ID", "request": { "method": "GET", "url": "{{baseUrl}}/api/lists/{{listId}}" } },
         {
           "name": "Create List",
           "request": {
@@ -223,13 +300,25 @@
             "url": "{{baseUrl}}/api/lists/{{listId}}/items"
           }
         },
-        { "name": "Clear Completed", "request": { "method": "POST", "url": "{{baseUrl}}/api/lists/{{listId}}/clear-completed" } }
+        {
+          "name": "Toggle List Item",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"user\": { \"id\": \"user-irmak\", \"name\": \"Irmak\", \"initials\": \"IR\" }\n}" },
+            "url": "{{baseUrl}}/api/lists/{{listId}}/items/{{listItemId}}/toggle"
+          }
+        },
+        { "name": "Delete List Item", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/lists/{{listId}}/items/{{listItemId}}" } },
+        { "name": "Clear Completed Items", "request": { "method": "POST", "url": "{{baseUrl}}/api/lists/{{listId}}/clear-completed" } },
+        { "name": "Delete List", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/lists/{{listId}}" } }
       ]
     },
     {
       "name": "Tasks",
       "item": [
         { "name": "Get Tasks", "request": { "method": "GET", "url": "{{baseUrl}}/api/tasks?spaceId={{spaceId}}" } },
+        { "name": "Get Task by ID", "request": { "method": "GET", "url": "{{baseUrl}}/api/tasks/{{taskId}}" } },
         {
           "name": "Create Task",
           "request": {
@@ -247,13 +336,33 @@
             "body": { "mode": "raw", "raw": "{\n  \"user\": { \"id\": \"user-irmak\", \"name\": \"Irmak\", \"initials\": \"IR\" }\n}" },
             "url": "{{baseUrl}}/api/tasks/{{taskId}}/toggle"
           }
-        }
+        },
+        {
+          "name": "Claim Task",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"user\": { \"id\": \"user-irmak\", \"name\": \"Irmak\", \"initials\": \"IR\" }\n}" },
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}/claim"
+          }
+        },
+        {
+          "name": "Update Task",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Updated task title\",\n  \"completed\": true\n}" },
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}"
+          }
+        },
+        { "name": "Delete Task", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/tasks/{{taskId}}" } }
       ]
     },
     {
       "name": "Notes",
       "item": [
         { "name": "Get Notes", "request": { "method": "GET", "url": "{{baseUrl}}/api/notes?spaceId={{spaceId}}" } },
+        { "name": "Get Note by ID", "request": { "method": "GET", "url": "{{baseUrl}}/api/notes/{{noteId}}" } },
         {
           "name": "Create Note",
           "request": {
@@ -263,7 +372,17 @@
             "url": "{{baseUrl}}/api/notes"
           }
         },
-        { "name": "Toggle Pin", "request": { "method": "POST", "url": "{{baseUrl}}/api/notes/{{noteId}}/toggle-pin" } }
+        {
+          "name": "Update Note",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Updated Note Title\",\n  \"content\": \"Updated note body content\"\n}" },
+            "url": "{{baseUrl}}/api/notes/{{noteId}}"
+          }
+        },
+        { "name": "Toggle Pin Note", "request": { "method": "POST", "url": "{{baseUrl}}/api/notes/{{noteId}}/toggle-pin" } },
+        { "name": "Delete Note", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/notes/{{noteId}}" } }
       ]
     },
     {

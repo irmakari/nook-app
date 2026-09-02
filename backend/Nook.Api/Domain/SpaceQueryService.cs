@@ -63,12 +63,13 @@ public sealed class SpaceQueryService(AppDbContext dbContext)
             var sectionMeta = DomainJson.ReadDictionary(space.SectionMetaJson);
             if (sections.Contains("Plans")) sectionMeta["Plans"] = $"{plans.Count} upcoming";
             if (sections.Contains("Polls")) sectionMeta["Polls"] = $"{activePollCount} active";
-            var itemCount = lists.Sum(x => DomainJson.ReadList<SharedListItem>(x.ItemsJson).Count);
-            if (sections.Contains("Shared Lists")) sectionMeta["Shared Lists"] = $"{lists.Count} {(lists.Count == 1 ? "list" : "lists")} · {itemCount} items";
+            var listItemCounts = lists.Select(x => new { x.Template, ItemCount = DomainJson.ReadList<SharedListItem>(x.ItemsJson).Count }).ToList();
+            var totalItemCount = listItemCounts.Sum(x => x.ItemCount);
+            if (sections.Contains("Shared Lists")) sectionMeta["Shared Lists"] = $"{lists.Count} {(lists.Count == 1 ? "list" : "lists")} · {totalItemCount} items";
             if (sections.Contains("Shopping"))
             {
-                var shopping = lists.Where(x => x.Template == "shopping").ToList();
-                sectionMeta["Shopping"] = $"{shopping.Count} list · {shopping.Sum(x => DomainJson.ReadList<SharedListItem>(x.ItemsJson).Count)} items";
+                var shopping = listItemCounts.Where(x => x.Template == "shopping").ToList();
+                sectionMeta["Shopping"] = $"{shopping.Count} list · {shopping.Sum(x => x.ItemCount)} items";
             }
             if (sections.Contains("To-do")) sectionMeta["To-do"] = $"{openTaskCount} remaining";
             if (sections.Contains("Notes")) sectionMeta["Notes"] = $"{noteCount} {(noteCount == 1 ? "note" : "notes")}";
@@ -102,12 +103,13 @@ public sealed class SpaceQueryService(AppDbContext dbContext)
         var sectionMeta = DomainJson.ReadDictionary(space.SectionMetaJson);
         if (sections.Contains("Plans")) sectionMeta["Plans"] = $"{plans.Count} upcoming";
         if (sections.Contains("Polls")) sectionMeta["Polls"] = $"{activePollCount} active";
-        var itemCount = lists.Sum(x => DomainJson.ReadList<SharedListItem>(x.ItemsJson).Count);
-        if (sections.Contains("Shared Lists")) sectionMeta["Shared Lists"] = $"{lists.Count} {(lists.Count == 1 ? "list" : "lists")} · {itemCount} items";
+        var listItemCounts = lists.Select(x => new { x.Template, ItemCount = DomainJson.ReadList<SharedListItem>(x.ItemsJson).Count }).ToList();
+        var totalItemCount = listItemCounts.Sum(x => x.ItemCount);
+        if (sections.Contains("Shared Lists")) sectionMeta["Shared Lists"] = $"{lists.Count} {(lists.Count == 1 ? "list" : "lists")} · {totalItemCount} items";
         if (sections.Contains("Shopping"))
         {
-            var shopping = lists.Where(x => x.Template == "shopping").ToList();
-            sectionMeta["Shopping"] = $"{shopping.Count} list · {shopping.Sum(x => DomainJson.ReadList<SharedListItem>(x.ItemsJson).Count)} items";
+            var shopping = listItemCounts.Where(x => x.Template == "shopping").ToList();
+            sectionMeta["Shopping"] = $"{shopping.Count} list · {shopping.Sum(x => x.ItemCount)} items";
         }
         if (sections.Contains("To-do")) sectionMeta["To-do"] = $"{openTaskCount} remaining";
         if (sections.Contains("Notes")) sectionMeta["Notes"] = $"{noteCount} {(noteCount == 1 ? "note" : "notes")}";

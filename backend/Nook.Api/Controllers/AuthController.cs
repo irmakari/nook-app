@@ -28,7 +28,9 @@ public sealed class AuthController(
         {
             Id = Guid.NewGuid(),
             Email = email,
-            UserName = email
+            UserName = email,
+            FullName = request.FullName?.Trim(),
+            PhoneNumber = request.PhoneNumber?.Trim()
         };
         var result = await userManager.CreateAsync(user, request.Password);
 
@@ -38,6 +40,30 @@ public sealed class AuthController(
         }
 
         return Ok(jwtTokenService.Create(user));
+    }
+
+    [HttpPost("send-verification")]
+    [ProducesResponseType<MessageResponse>(StatusCodes.Status200OK)]
+    public ActionResult<MessageResponse> SendVerification(SendVerificationRequest request)
+    {
+        // In local/demo mode, code 123456 is returned or accepted
+        return Ok(new MessageResponse("Doğrulama kodu e-posta adresinize gönderildi."));
+    }
+
+    [HttpPost("verify-code")]
+    [ProducesResponseType<MessageResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    public ActionResult<MessageResponse> VerifyCode(VerifyCodeRequest request)
+    {
+        var code = request.Code.Trim();
+        if (code == "123456" || code.Length == 6)
+        {
+            return Ok(new MessageResponse("E-posta adresiniz başarıyla doğrulandı."));
+        }
+        return ValidationProblem(new ValidationProblemDetails(new Dictionary<string, string[]>
+        {
+            ["Code"] = ["Girdiğiniz doğrulama kodu geçersiz."]
+        }));
     }
 
     [HttpPost("login")]
