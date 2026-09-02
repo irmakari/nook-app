@@ -26,8 +26,6 @@ import { getAccentTint } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { SpaceIcon } from '@/components/SpaceIcon';
 
-const CURRENT_USER: SpaceMember = { name: 'Irmak', initials: 'IR' };
-
 export default function PollDetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -35,6 +33,7 @@ export default function PollDetailScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
+  const [currentUser, setCurrentUser] = useState<SpaceMember>(spaceService.getCurrentMember());
   const [poll, setPoll] = useState<Poll | null>(null);
   const [space, setSpace] = useState<Space | null>(null);
   const [addModalVisible, setAddModalVisible] = useState(false);
@@ -43,6 +42,7 @@ export default function PollDetailScreen() {
 
   useEffect(() => {
     const loadPollAndSpace = async () => {
+      setCurrentUser(spaceService.getCurrentMember());
       if (id) {
         const foundPoll = await spaceService.getPollById(id);
         if (foundPoll) {
@@ -57,7 +57,7 @@ export default function PollDetailScreen() {
 
     const unsubscribe = spaceService.subscribe(() => {
       loadPollAndSpace();
-    });
+    }, ['polls', 'spaces', 'session']);
 
     return () => unsubscribe();
   }, [id]);
@@ -87,18 +87,23 @@ export default function PollDetailScreen() {
   const subtleBorder = getAccentTint(accentColor, isDark ? 0.35 : 0.25);
 
   const isClosed = !!poll.isClosed;
-  const isCreator = poll.createdBy === CURRENT_USER.name;
 
   // Calculate total votes and leading vote count
   const totalVotes = poll.options.reduce((acc, opt) => acc + opt.voters.length, 0);
   const maxVotes = Math.max(...poll.options.map((o) => o.voters.length), 0);
+  
+  const isCreator = poll.createdBy === currentUser.name;
+  const userHasVoted = poll.options.some((opt) =>
+    opt.voterIds.includes(currentUser.name)
+  );
 
-  const handleVote = (optionId: string) => {
-    spaceService.votePoll(poll.id, optionId, CURRENT_USER);
+  const handleToggleVote = (optionId: string) => {
+    if (poll.isClosed) return;
+    spaceService.votePoll(poll.id, optionId, currentUser);
   };
 
   const handleAddOption = (text: string) => {
-    spaceService.addPollOption(poll.id, text, CURRENT_USER);
+    spaceService.addPollOption(poll.id, text, currentUser);
   };
 
   const handleClosePoll = async () => {
@@ -285,7 +290,7 @@ export default function PollDetailScreen() {
         {/* Options List */}
         <View style={styles.optionsList}>
           {poll.options.map((opt) => {
-            const isSelected = opt.voterIds.includes(CURRENT_USER.name);
+            const isSelected = opt.voterIds.includes(currentUser.name);
             const isLeading = maxVotes > 0 && opt.voters.length === maxVotes;
 
             return (
@@ -297,7 +302,7 @@ export default function PollDetailScreen() {
                 isSelected={isSelected}
                 isClosed={isClosed}
                 accentColor={accentColor}
-                onVote={handleVote}
+                onVote={handleToggleVote}
               />
             );
           })}

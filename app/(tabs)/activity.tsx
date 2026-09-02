@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -35,7 +35,7 @@ export default function ActivityScreen() {
 
     const unsubscribe = spaceService.subscribe(() => {
       loadActivities();
-    });
+    }, ['activities', 'session']);
 
     return () => unsubscribe();
   }, []);
@@ -104,20 +104,25 @@ export default function ActivityScreen() {
     );
   };
 
-  // Find which day numbers have activities
-  const activeDayNumbers = activities.map((act) => {
-    const d = new Date(act.createdAt);
-    return d.getDate();
-  });
+  const activeDayNumbers = useMemo(
+    () => activities.map((act) => {
+      const d = new Date(act.createdAt);
+      return d.getDate();
+    }),
+    [activities]
+  );
 
-  const filteredActivities = activities.filter((act) => {
-    const actDate = new Date(act.createdAt);
-    return (
-      actDate.getFullYear() === selectedDate.getFullYear() &&
-      actDate.getMonth() === selectedDate.getMonth() &&
-      actDate.getDate() === selectedDate.getDate()
-    );
-  });
+  const filteredActivities = useMemo(
+    () => activities.filter((act) => {
+      const actDate = new Date(act.createdAt);
+      return (
+        actDate.getFullYear() === selectedDate.getFullYear() &&
+        actDate.getMonth() === selectedDate.getMonth() &&
+        actDate.getDate() === selectedDate.getDate()
+      );
+    }),
+    [activities, selectedDate]
+  );
 
   const displayList =
     filteredActivities.length > 0 ? filteredActivities : activities;

@@ -25,8 +25,6 @@ import {
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { SpaceIcon } from '@/components/SpaceIcon';
 
-const CURRENT_USER: SpaceMember = { name: 'Irmak', initials: 'IR' };
-
 export default function TodoListScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -34,6 +32,7 @@ export default function TodoListScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
+  const [currentUser, setCurrentUser] = useState<SpaceMember>(spaceService.getCurrentMember());
   const [space, setSpace] = useState<Space | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filter, setFilter] = useState<'all' | 'mine'>('all');
@@ -43,6 +42,7 @@ export default function TodoListScreen() {
 
   useEffect(() => {
     const loadData = async () => {
+      setCurrentUser(spaceService.getCurrentMember());
       if (id) {
         const foundSpace = await spaceService.getSpaceById(id);
         if (foundSpace) setSpace(foundSpace);
@@ -55,7 +55,7 @@ export default function TodoListScreen() {
 
     const unsubscribe = spaceService.subscribe(() => {
       loadData();
-    });
+    }, ['tasks', 'spaces', 'session']);
 
     return () => unsubscribe();
   }, [id]);
@@ -85,7 +85,7 @@ export default function TodoListScreen() {
   // Apply Filter
   const filteredTasks = tasks.filter((t) => {
     if (filter === 'mine') {
-      return t.assignedTo === CURRENT_USER.name;
+      return t.assignedTo === currentUser.name;
     }
     return true;
   });
@@ -105,11 +105,11 @@ export default function TodoListScreen() {
   );
 
   const handleToggleTask = (taskId: string) => {
-    spaceService.toggleTask(taskId, CURRENT_USER);
+    spaceService.toggleTask(taskId, currentUser);
   };
 
   const handleClaimTask = (taskId: string) => {
-    spaceService.claimTask(taskId, CURRENT_USER);
+    spaceService.claimTask(taskId, currentUser);
   };
 
   const handleQuickAdd = (title: string) => {

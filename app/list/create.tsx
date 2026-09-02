@@ -114,13 +114,10 @@ export default function CreateListScreen() {
           <View style={styles.templatesGrid}>
             {LIST_TEMPLATES_ARRAY.map((t) => (
               <ListTemplateOption
-                key={t.type}
-                template={t.type}
-                title={t.title}
-                description={t.description}
-                iconName={t.iconName}
-                selected={template === t.type}
-                onSelect={() => handleSelectTemplate(t.type)}
+                key={t.id}
+                template={t}
+                isSelected={template === t.id}
+                onSelect={handleSelectTemplate}
                 accentColor={accentColor}
               />
             ))}

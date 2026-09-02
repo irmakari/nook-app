@@ -45,7 +45,7 @@ export default function HomeScreen() {
     // Subscribe to updates from create space flow
     const unsubscribe = spaceService.subscribe(() => {
       loadSpaces();
-    });
+    }, ['spaces', 'session']);
 
     return () => unsubscribe();
   }, []);

@@ -42,7 +42,7 @@ export default function ProfileScreen() {
 
     const unsubscribe = spaceService.subscribe(() => {
       loadData();
-    });
+    }, ['spaces', 'session']);
 
     return () => unsubscribe();
   }, []);

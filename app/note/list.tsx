@@ -42,7 +42,7 @@ export default function NotesListScreen() {
 
     const unsubscribe = spaceService.subscribe(() => {
       loadData();
-    });
+    }, ['notes', 'spaces', 'session']);
 
     return () => unsubscribe();
   }, [spaceId]);

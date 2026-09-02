@@ -69,7 +69,7 @@ export default function NoteDetailScreen() {
 
     const unsubscribe = spaceService.subscribe(() => {
       loadNoteAndSpace();
-    });
+    }, ['notes', 'spaces', 'session']);
 
     return () => unsubscribe();
   }, [id]);

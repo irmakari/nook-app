@@ -29,8 +29,6 @@ import { getAccentTint } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { SpaceIcon } from '@/components/SpaceIcon';
 
-const CURRENT_USER: SpaceMember = { name: 'Irmak', initials: 'IR' };
-
 export default function ListDetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -38,6 +36,7 @@ export default function ListDetailScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
+  const [currentUser, setCurrentUser] = useState<SpaceMember>(spaceService.getCurrentMember());
   const [list, setList] = useState<SharedList | null>(null);
   const [space, setSpace] = useState<Space | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
@@ -45,6 +44,7 @@ export default function ListDetailScreen() {
 
   useEffect(() => {
     const loadListAndSpace = async () => {
+      setCurrentUser(spaceService.getCurrentMember());
       if (id) {
         const foundList = await spaceService.getListById(id);
         if (foundList) {
@@ -59,7 +59,7 @@ export default function ListDetailScreen() {
 
     const unsubscribe = spaceService.subscribe(() => {
       loadListAndSpace();
-    });
+    }, ['lists', 'spaces', 'session']);
 
     return () => unsubscribe();
   }, [id]);
@@ -94,11 +94,11 @@ export default function ListDetailScreen() {
   const completedItems = list.items.filter((item: ListItem) => item.completed);
 
   const handleAddItem = (text: string) => {
-    spaceService.addListItem(list.id, text, CURRENT_USER);
+    spaceService.addListItem(list.id, text, currentUser);
   };
 
   const handleToggleItem = (itemId: string) => {
-    spaceService.toggleListItem(list.id, itemId, CURRENT_USER);
+    spaceService.toggleListItem(list.id, itemId, currentUser);
   };
 
   const handleDeleteItem = (itemId: string) => {
