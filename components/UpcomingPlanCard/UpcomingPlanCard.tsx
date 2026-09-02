@@ -17,6 +17,32 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
+function parsePlanDate(dateStr?: string | null) {
+  if (!dateStr) return null;
+  const parts = dateStr.split('·').map((s) => s.trim());
+  const datePart = parts[0] || '';
+  const timePart = parts[1] || '';
+
+  const match = datePart.match(/^(?:([A-Za-z]+),\s*)?([A-Za-z]+)\s+(\d+)/i);
+  if (match) {
+    return {
+      weekday: (match[1] || '').toUpperCase().slice(0, 3),
+      month: (match[2] || '').toUpperCase().slice(0, 3),
+      day: match[3] || '',
+      time: timePart || '',
+      fullDateText: datePart,
+    };
+  }
+
+  return {
+    weekday: '',
+    month: 'PLAN',
+    day: '★',
+    time: timePart || '',
+    fullDateText: dateStr,
+  };
+}
+
 export function UpcomingPlanCard({
   plan,
   accentColor,
@@ -87,6 +113,8 @@ export function UpcomingPlanCard({
     );
   }
 
+  const parsedDate = parsePlanDate(plan.date);
+
   return (
     <AnimatedPressable
       onPressIn={handlePressIn}
@@ -125,34 +153,79 @@ export function UpcomingPlanCard({
         />
       </View>
 
-      {/* Plan Title */}
-      <ThemedText type="title" style={styles.title} numberOfLines={2}>
-        {plan.title}
-      </ThemedText>
-
-      {/* Details Row: Date / Time + Location */}
-      <View style={styles.detailsRow}>
-        <View style={styles.detailItem}>
-          <Ionicons
-            name="calendar-outline"
-            size={14}
-            color={isDark ? '#A1A1AA' : '#71717A'}
-          />
-          <ThemedText style={styles.detailText}>{plan.date}</ThemedText>
-        </View>
-
-        {plan.location ? (
-          <View style={styles.detailItem}>
-            <Ionicons
-              name="location-outline"
-              size={14}
-              color={isDark ? '#A1A1AA' : '#71717A'}
-            />
-            <ThemedText style={styles.detailText} numberOfLines={1}>
-              {plan.location}
+      {/* Main Content: Left Calendar Tile + Right Info */}
+      <View style={styles.mainContentRow}>
+        {/* Mini Calendar Tile Block */}
+        <View
+          style={[
+            styles.calendarBlock,
+            {
+              backgroundColor: isDark ? '#22222A' : '#FAF8F5',
+              borderColor: subtleBorder,
+            },
+          ]}>
+          <View style={[styles.calendarMonthHeader, { backgroundColor: accentColor }]}>
+            <ThemedText style={styles.calendarMonthText}>
+              {parsedDate?.month || 'DATE'}
             </ThemedText>
           </View>
-        ) : null}
+          <View style={styles.calendarDayBody}>
+            <ThemedText style={styles.calendarDayNumber}>
+              {parsedDate?.day || '•'}
+            </ThemedText>
+            {parsedDate?.weekday ? (
+              <ThemedText style={styles.calendarWeekdayText}>
+                {parsedDate.weekday}
+              </ThemedText>
+            ) : null}
+          </View>
+        </View>
+
+        {/* Plan Info */}
+        <View style={styles.planInfo}>
+          <ThemedText type="title" style={styles.title} numberOfLines={1}>
+            {plan.title}
+          </ThemedText>
+
+          <View style={styles.detailsRow}>
+            {parsedDate?.time || plan.time ? (
+              <View style={styles.detailItem}>
+                <Ionicons
+                  name="time-outline"
+                  size={13}
+                  color={isDark ? '#A1A1AA' : '#71717A'}
+                />
+                <ThemedText style={styles.detailText}>
+                  {parsedDate?.time || plan.time}
+                </ThemedText>
+              </View>
+            ) : (
+              <View style={styles.detailItem}>
+                <Ionicons
+                  name="calendar-outline"
+                  size={13}
+                  color={isDark ? '#A1A1AA' : '#71717A'}
+                />
+                <ThemedText style={styles.detailText}>
+                  {parsedDate?.fullDateText || plan.date}
+                </ThemedText>
+              </View>
+            )}
+
+            {plan.location ? (
+              <View style={styles.detailItem}>
+                <Ionicons
+                  name="location-outline"
+                  size={13}
+                  color={isDark ? '#A1A1AA' : '#71717A'}
+                />
+                <ThemedText style={styles.detailText} numberOfLines={1}>
+                  {plan.location}
+                </ThemedText>
+              </View>
+            ) : null}
+          </View>
+        </View>
       </View>
 
       {/* Divider */}
@@ -169,7 +242,7 @@ export function UpcomingPlanCard({
           <AvatarStack
             members={plan.attendees}
             max={3}
-            size={24}
+            size={22}
             ringColor={isDark ? '#1A1A1E' : '#FFFFFF'}
           />
         ) : (

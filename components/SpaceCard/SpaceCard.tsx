@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { View, Pressable, Platform, Animated, PanResponder } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { SpaceCardProps } from './types';
 import { styles } from './styles';
@@ -168,7 +168,7 @@ export function SpaceCard({ space, onPress, onDelete, onLongPress }: SpaceCardPr
           {/* Floating Pin Badge at Top-Right Border */}
           {space.isPinned ? (
             <View style={styles.pinBadge}>
-              <Ionicons name="pin" size={11} color="#FFFFFF" />
+              <MaterialCommunityIcons name="pin" size={13} color="#FFFFFF" style={styles.pinIcon} />
             </View>
           ) : null}
 

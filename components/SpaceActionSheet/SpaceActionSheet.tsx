@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, View, Pressable, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 import { SpaceActionSheetProps } from './types';
@@ -179,7 +179,7 @@ export function SpaceActionSheet({
                   styles.iconBox,
                   { backgroundColor: softTint },
                 ]}>
-                <Ionicons
+                <MaterialCommunityIcons
                   name={isPinned ? 'pin' : 'pin-outline'}
                   size={20}
                   color={isDark ? '#F4F4F5' : '#18181B'}
