@@ -85,10 +85,11 @@ export default function CreatePlanScreen() {
 
   const handleRemoveVotingOption = (idToRemove: string) => {
     if (votingOptions.length <= 2) {
-      setNotice('A voting plan requires at least 2 options.');
+      setNotice('Oylamalı bir plan için en az 2 seçenek gereklidir.');
       return;
     }
     if (Platform.OS !== 'web') Haptics.selectionAsync();
+    setNotice(null);
     setVotingOptions(votingOptions.filter((o) => o.id !== idToRemove));
   };
 
@@ -97,6 +98,7 @@ export default function CreatePlanScreen() {
     field: 'date' | 'time',
     val: string
   ) => {
+    setNotice(null);
     setVotingOptions(
       votingOptions.map((o) => (o.id === id ? { ...o, [field]: val } : o))
     );
@@ -104,12 +106,14 @@ export default function CreatePlanScreen() {
 
   const handleCreatePlan = async () => {
     if (!title.trim()) {
-      setNotice('Please enter a plan name.');
+      if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      setNotice('Lütfen plan için bir isim girin.');
       return;
     }
 
     if (mode === 'vote' && votingOptions.length < 2) {
-      setNotice('Please provide at least 2 options for voting.');
+      if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      setNotice('Oylamalı plan için en az 2 seçenek gereklidir.');
       return;
     }
 
@@ -140,9 +144,9 @@ export default function CreatePlanScreen() {
         pathname: '/plan/[id]',
         params: { id: created.id },
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error creating plan:', err);
-      setNotice(err instanceof Error ? err.message : 'Error creating plan.');
+      setNotice(err?.message || 'Plan oluşturulurken bir hata oluştu.');
     } finally {
       setIsSubmitting(false);
     }
@@ -166,6 +170,20 @@ export default function CreatePlanScreen() {
           styles.scrollContent,
           { paddingBottom: Math.max(insets.bottom + 90, 110) },
         ]}>
+        
+        {/* Notice Alert Banner */}
+        {notice ? (
+          <View style={[styles.noticeBox, { backgroundColor: isDark ? '#3A1F2A' : '#FFF0F4' }]}>
+            <Ionicons name="alert-circle-outline" size={20} color="#D94E84" />
+            <ThemedText type="caption" style={styles.noticeText}>
+              {notice}
+            </ThemedText>
+            <Pressable onPress={() => setNotice(null)} style={{ padding: 2 }}>
+              <Ionicons name="close" size={18} color="#D94E84" />
+            </Pressable>
+          </View>
+        ) : null}
+
         {/* 1. Plan Name */}
         <View style={styles.inputGroup}>
           <ThemedText type="label" style={styles.label}>
@@ -573,5 +591,19 @@ const styles = StyleSheet.create({
   switchHelp: {
     color: '#8E8D94',
     marginTop: 2,
+  },
+  noticeBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 14,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
+  noticeText: {
+    color: '#D94E84',
+    flex: 1,
+    fontFamily: 'Poppins_500Medium',
+    fontSize: 13,
   },
 });

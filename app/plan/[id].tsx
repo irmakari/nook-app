@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -13,7 +13,6 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 import { ThemedText } from '@/components/themed-text';
-import { AvatarStack } from '@/components/AvatarStack';
 import { PlanOptionCard } from '@/components/PlanOptionCard';
 import { RSVPSelector } from '@/components/RSVPSelector';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -30,7 +29,32 @@ import { getAccentTint } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { SpaceIcon } from '@/components/SpaceIcon';
 
-const CURRENT_USER: SpaceMember = { name: 'Irmak', initials: 'IR' };
+// Helper to parse dateDisplay strings like "Saturday, Sep 5 · 10:00"
+function parseConfirmedDate(dateDisplay?: string | null) {
+  if (!dateDisplay) return null;
+  const parts = dateDisplay.split('·').map((s) => s.trim());
+  const datePart = parts[0] || '';
+  const timePart = parts[1] || '';
+
+  const match = datePart.match(/^(?:([A-Za-z]+),\s*)?([A-Za-z]+)\s+(\d+)/i);
+  if (match) {
+    return {
+      weekday: (match[1] || '').toUpperCase(),
+      month: (match[2] || '').toUpperCase().slice(0, 3),
+      day: match[3] || '',
+      time: timePart || '',
+      fullDateText: datePart,
+    };
+  }
+
+  return {
+    weekday: '',
+    month: 'PLAN',
+    day: '★',
+    time: timePart || '',
+    fullDateText: dateDisplay,
+  };
+}
 
 export default function PlanDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -39,8 +63,16 @@ export default function PlanDetailScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const [plan, setPlan] = useState<Plan | null>(null);
-  const [space, setSpace] = useState<Space | null>(null);
+  // Fast synchronous initial cache retrieval
+  const [currentUser, setCurrentUser] = useState<SpaceMember>(() => spaceService.getCurrentMember());
+  const [plan, setPlan] = useState<Plan | null>(() => (id ? spaceService.getPlanSync(id) || null : null));
+  const [space, setSpace] = useState<Space | null>(() => {
+    const initialPlan = id ? spaceService.getPlanSync(id) : null;
+    if (initialPlan) {
+      return spaceService.getSpaceSync(initialPlan.spaceId) || null;
+    }
+    return null;
+  });
   const [relatedPolls, setRelatedPolls] = useState<Poll[]>([]);
   const [menuModalVisible, setMenuModalVisible] = useState(false);
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
@@ -48,16 +80,34 @@ export default function PlanDetailScreen() {
   const [selectedOptionToFinalize, setSelectedOptionToFinalize] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const loadPlanAndSpace = async () => {
-      if (id) {
-        const foundPlan = await spaceService.getPlanById(id);
-        if (foundPlan) {
-          setPlan(foundPlan);
-          const foundSpace = await spaceService.getSpaceById(foundPlan.spaceId);
-          if (foundSpace) setSpace(foundSpace);
-          const polls = await spaceService.getPollsByPlanId(foundPlan.id);
-          setRelatedPolls(polls);
-        }
+      setCurrentUser(spaceService.getCurrentMember());
+      if (!id) return;
+
+      const foundPlan = await spaceService.getPlanById(id);
+      if (!foundPlan || !isMounted) return;
+
+      let foundSpace = spaceService.getSpaceSync(foundPlan.spaceId);
+      let polls: Poll[] = [];
+
+      if (!foundSpace) {
+        const [loadedSpace, loadedPolls] = await Promise.all([
+          spaceService.getSpaceById(foundPlan.spaceId),
+          spaceService.getPollsByPlanId(foundPlan.id),
+        ]);
+        foundSpace = loadedSpace;
+        polls = loadedPolls;
+      } else {
+        polls = await spaceService.getPollsByPlanId(foundPlan.id);
+      }
+
+      if (isMounted) {
+        // Batch set states together so there is NEVER an intermediate color flash
+        setPlan(foundPlan);
+        if (foundSpace) setSpace(foundSpace);
+        setRelatedPolls(polls);
       }
     };
 
@@ -65,9 +115,12 @@ export default function PlanDetailScreen() {
 
     const unsubscribe = spaceService.subscribe(() => {
       loadPlanAndSpace();
-    });
+    }, ['plans', 'polls', 'spaces', 'session']);
 
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, [id]);
 
   if (!plan) {
@@ -95,25 +148,57 @@ export default function PlanDetailScreen() {
   const subtleBorder = getAccentTint(accentColor, isDark ? 0.35 : 0.25);
 
   const isConfirmed = plan.status === 'confirmed';
-  const isCreator = plan.createdBy === CURRENT_USER.name;
+  const isCreator = plan.createdBy === currentUser.name;
 
-  const currentRSVP = plan.rsvps?.find((r) => r.userId === CURRENT_USER.name)?.status;
+  const currentRSVP = plan.rsvps?.find(
+    (r) => r.userId === currentUser.name || r.userName === currentUser.name
+  )?.status;
   const goingRSVPs = plan.rsvps?.filter((r) => r.status === 'going') || [];
   const maybeRSVPs = plan.rsvps?.filter((r) => r.status === 'maybe') || [];
+  const declinedRSVPs = plan.rsvps?.filter((r) => r.status === 'declined') || [];
+
+  const parsedDate = parseConfirmedDate(plan.dateDisplay);
 
   const handleToggleVote = (optionId: string) => {
-    spaceService.votePlanOption(plan.id, optionId, CURRENT_USER);
+    // Optimistic local update
+    if (plan.options) {
+      const updatedOptions = plan.options.map((opt) => {
+        if (opt.id === optionId) {
+          const hasVoted = opt.voterIds.includes(currentUser.name);
+          const nextVoters = hasVoted
+            ? opt.voters.filter((v) => v.name !== currentUser.name)
+            : [...opt.voters, currentUser];
+          const nextVoterIds = hasVoted
+            ? opt.voterIds.filter((name) => name !== currentUser.name)
+            : [...opt.voterIds, currentUser.name];
+          return { ...opt, voters: nextVoters, voterIds: nextVoterIds };
+        }
+        return opt;
+      });
+      setPlan({ ...plan, options: updatedOptions });
+    }
+    spaceService.votePlanOption(plan.id, optionId, currentUser);
   };
 
   const handleSelectRSVP = (status: PlanRSVPStatus) => {
-    spaceService.rsvpPlan(plan.id, CURRENT_USER, status);
+    // Optimistic local update
+    const nextRsvps = [...(plan.rsvps || []).filter((r) => r.userId !== currentUser.name && r.userName !== currentUser.name)];
+    nextRsvps.push({
+      id: `rsvp-${Date.now()}`,
+      planId: plan.id,
+      userId: currentUser.name,
+      userName: currentUser.name,
+      initials: currentUser.initials,
+      status,
+    });
+    setPlan({ ...plan, rsvps: nextRsvps });
+    spaceService.rsvpPlan(plan.id, currentUser, status);
   };
 
   const handleOpenFinalize = (optionId?: string) => {
     if (optionId) {
       setSelectedOptionToFinalize(optionId);
     } else if (plan.options && plan.options.length > 0) {
-      // Pick option with most votes as default
       const sorted = [...plan.options].sort((a, b) => b.voters.length - a.voters.length);
       setSelectedOptionToFinalize(sorted[0].id);
     }
@@ -135,10 +220,10 @@ export default function PlanDetailScreen() {
         styles.container,
         {
           backgroundColor: isDark ? '#121214' : '#FAF8F5',
-          paddingTop: Math.max(insets.top, 20),
+          paddingTop: Math.max(insets.top, 16),
         },
       ]}>
-      {/* Top Nav */}
+      {/* Top Nav Bar */}
       <View style={styles.navBar}>
         <Pressable
           onPress={() => {
@@ -165,13 +250,20 @@ export default function PlanDetailScreen() {
           />
         </Pressable>
 
-        <View style={styles.navSpaceBadge}>
+        <View
+          style={[
+            styles.navSpaceBadge,
+            {
+              backgroundColor: isDark ? '#1E1E24' : '#EFECE6',
+              borderColor: isDark ? '#2D2D35' : '#E5E1D8',
+            },
+          ]}>
           {space?.icon && (
             <View style={{ marginRight: 6 }}>
               <SpaceIcon
                 name={space.icon}
                 size={14}
-                color={isDark ? '#F4F4F5' : '#18181B'}
+                color={accentColor}
               />
             </View>
           )}
@@ -217,101 +309,193 @@ export default function PlanDetailScreen() {
           styles.scrollContent,
           { paddingBottom: Math.max(insets.bottom + 80, 100) },
         ]}>
-        {/* Status Badge */}
-        <View style={styles.badgeRow}>
-          <View
-            style={[
-              styles.statusBadge,
-              {
-                backgroundColor: isConfirmed ? softTint : 'rgba(255, 143, 69, 0.14)',
-                borderColor: isConfirmed ? subtleBorder : 'rgba(255, 143, 69, 0.3)',
-              },
-            ]}>
+        {/* Header Section */}
+        <View style={styles.headerSection}>
+          <ThemedText type="screenTitle" style={styles.planTitle}>
+            {plan.title}
+          </ThemedText>
+
+          <View style={styles.creatorRow}>
+            {/* Creator avatar & name */}
+            <View style={styles.creatorMeta}>
+              <View
+                style={[
+                  styles.creatorAvatar,
+                  {
+                    backgroundColor: softTint,
+                    borderColor: subtleBorder,
+                  },
+                ]}>
+                <ThemedText
+                  style={[
+                    styles.creatorInitials,
+                    { color: isDark ? '#F4F4F5' : '#18181B' },
+                  ]}>
+                  {plan.createdBy ? plan.createdBy.slice(0, 2).toUpperCase() : 'IR'}
+                </ThemedText>
+              </View>
+              <ThemedText style={styles.creatorText}>
+                by <ThemedText style={[styles.creatorName, { color: isDark ? '#F4F4F5' : '#18181B' }]}>{plan.createdBy || 'Irmak'}</ThemedText>
+              </ThemedText>
+            </View>
+
+            <View style={[styles.metaDot, { backgroundColor: isDark ? '#3F3F46' : '#D4D4D8' }]} />
+
+            {/* Status Badge */}
             <View
               style={[
-                styles.statusDot,
-                { backgroundColor: isConfirmed ? accentColor : '#FF8F45' },
-              ]}
-            />
-            <ThemedText
-              style={[
-                styles.statusBadgeText,
-                { color: isConfirmed ? (isDark ? '#F4F4F5' : '#18181B') : '#FF8F45' },
-              ]}>
-              {isConfirmed ? 'PLAN CONFIRMED' : 'CHOOSING A TIME'}
-            </ThemedText>
-          </View>
-        </View>
-
-        {/* Plan Title */}
-        <ThemedText type="screenTitle" style={styles.planTitle}>
-          {plan.title}
-        </ThemedText>
-
-        {/* Creator Identity & Meta */}
-        <View style={styles.creatorRow}>
-          <View style={[styles.creatorAvatar, { backgroundColor: softTint }]}>
-            <ThemedText
-              style={[
-                styles.creatorInitials,
-                { color: isDark ? '#F4F4F5' : '#18181B' },
-              ]}>
-              {plan.createdBy ? plan.createdBy.slice(0, 2).toUpperCase() : 'IR'}
-            </ThemedText>
-          </View>
-          <ThemedText style={styles.creatorText}>
-            Created by{' '}
-            <ThemedText style={styles.creatorName}>
-              {plan.createdBy || 'Irmak'}
-            </ThemedText>
-          </ThemedText>
-        </View>
-
-        {/* Note if exists */}
-        {plan.note ? (
-          <ThemedText type="body" style={styles.planNote}>
-            {plan.note}
-          </ThemedText>
-        ) : null}
-
-        {/* Location if exists */}
-        {plan.location ? (
-          <View style={styles.locationContainer}>
-            <Ionicons
-              name="location-outline"
-              size={16}
-              color={isDark ? '#A1A1AA' : '#71717A'}
-            />
-            <ThemedText style={styles.locationText}>{plan.location}</ThemedText>
-          </View>
-        ) : null}
-
-        {/* CONFIRMED STATE */}
-        {isConfirmed ? (
-          <>
-            {/* Confirmed Date Banner */}
-            <View
-              style={[
-                styles.confirmedDateBanner,
+                styles.statusBadge,
                 {
-                  backgroundColor: softTint,
-                  borderColor: subtleBorder,
+                  backgroundColor: isConfirmed ? softTint : 'rgba(255, 143, 69, 0.12)',
+                  borderColor: isConfirmed ? subtleBorder : 'rgba(255, 143, 69, 0.28)',
                 },
               ]}>
-              <View style={styles.bannerIconBox}>
-                <Ionicons name="calendar" size={22} color={accentColor} />
+              <View
+                style={[
+                  styles.statusDot,
+                  { backgroundColor: isConfirmed ? accentColor : '#FF8F45' },
+                ]}
+              />
+              <ThemedText
+                style={[
+                  styles.statusBadgeText,
+                  { color: isConfirmed ? (isDark ? '#F4F4F5' : '#18181B') : '#FF8F45' },
+                ]}>
+                {isConfirmed ? 'Confirmed' : 'Choosing a time'}
+              </ThemedText>
+            </View>
+          </View>
+        </View>
+
+        {/* Location & Notes Section (Clean Card Layout) */}
+        {(plan.location || plan.note) && (
+          <View
+            style={[
+              styles.metaDetailsCard,
+              {
+                backgroundColor: isDark ? '#1A1A1E' : '#FFFFFF',
+                borderColor: isDark ? '#26262B' : '#EFECE6',
+              },
+            ]}>
+            {plan.location && (
+              <View style={styles.metaRow}>
+                <View
+                  style={[
+                    styles.metaIconBox,
+                    { backgroundColor: isDark ? '#24242C' : '#F4F2EB' },
+                  ]}>
+                  <Ionicons name="location" size={16} color={accentColor} />
+                </View>
+                <View style={styles.metaTextGroup}>
+                  <ThemedText type="caption" style={styles.metaLabel}>
+                    LOCATION
+                  </ThemedText>
+                  <ThemedText type="body" weight="medium" style={styles.metaValue}>
+                    {plan.location}
+                  </ThemedText>
+                </View>
               </View>
-              <View style={styles.bannerTextGroup}>
-                <ThemedText type="caption" style={styles.bannerLabel}>
-                  CONFIRMED DATE & TIME
+            )}
+
+            {plan.location && plan.note && (
+              <View
+                style={[
+                  styles.metaDivider,
+                  { backgroundColor: isDark ? '#26262B' : '#EFECE6' },
+                ]}
+              />
+            )}
+
+            {plan.note && (
+              <View style={styles.metaRow}>
+                <View
+                  style={[
+                    styles.metaIconBox,
+                    { backgroundColor: isDark ? '#24242C' : '#F4F2EB' },
+                  ]}>
+                  <Ionicons name="document-text-outline" size={16} color={accentColor} />
+                </View>
+                <View style={styles.metaTextGroup}>
+                  <ThemedText type="caption" style={styles.metaLabel}>
+                    NOTE / DESCRIPTION
+                  </ThemedText>
+                  <ThemedText type="body" style={styles.metaNoteText}>
+                    {plan.note}
+                  </ThemedText>
+                </View>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* CONFIRMED STATE HERO TICKET */}
+        {isConfirmed ? (
+          <>
+            <View
+              style={[
+                styles.ticketCard,
+                {
+                  backgroundColor: isDark ? '#18181D' : '#FFFFFF',
+                  borderColor: isDark ? '#2D2D36' : '#EAE6DF',
+                },
+              ]}>
+              {/* Left Calendar Block */}
+              <View
+                style={[
+                  styles.calendarBlock,
+                  {
+                    backgroundColor: isDark ? '#22222A' : '#FAF8F5',
+                    borderColor: subtleBorder,
+                  },
+                ]}>
+                <View style={[styles.calendarMonthHeader, { backgroundColor: accentColor }]}>
+                  <ThemedText style={styles.calendarMonthText}>
+                    {parsedDate?.month || 'DATE'}
+                  </ThemedText>
+                </View>
+                <View style={styles.calendarDayBody}>
+                  <ThemedText style={styles.calendarDayNumber}>
+                    {parsedDate?.day || '•'}
+                  </ThemedText>
+                  {parsedDate?.weekday ? (
+                    <ThemedText style={styles.calendarWeekdayText}>
+                      {parsedDate.weekday.slice(0, 3)}
+                    </ThemedText>
+                  ) : null}
+                </View>
+              </View>
+
+              {/* Right Event Details */}
+              <View style={styles.ticketDetails}>
+                <View style={styles.ticketStatusRow}>
+                  <View style={[styles.miniLockPill, { backgroundColor: softTint }]}>
+                    <Ionicons name="lock-closed" size={11} color={accentColor} />
+                    <ThemedText style={[styles.miniLockText, { color: accentColor }]}>
+                      LOCKED IN
+                    </ThemedText>
+                  </View>
+                </View>
+
+                <ThemedText type="title" style={styles.ticketFullDate}>
+                  {parsedDate?.fullDateText || plan.dateDisplay || 'Date Locked'}
                 </ThemedText>
-                <ThemedText type="title" style={styles.bannerDateText}>
-                  {plan.dateDisplay || 'Date locked'}
-                </ThemedText>
+
+                {parsedDate?.time ? (
+                  <View style={styles.ticketTimeRow}>
+                    <Ionicons
+                      name="time-outline"
+                      size={15}
+                      color={isDark ? '#A1A1AA' : '#71717A'}
+                    />
+                    <ThemedText style={styles.ticketTimeText}>
+                      {parsedDate.time}
+                    </ThemedText>
+                  </View>
+                ) : null}
               </View>
             </View>
 
-            {/* Attendance & RSVPs */}
+            {/* Attendance & RSVPs Card */}
             <View
               style={[
                 styles.attendeesCard,
@@ -321,97 +505,104 @@ export default function PlanDetailScreen() {
                 },
               ]}>
               <View style={styles.attendeesTop}>
-                <ThemedText type="body" weight="semiBold">
-                  {"Who's coming"}
-                </ThemedText>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <ThemedText type="body" weight="semiBold">
+                    Who's coming
+                  </ThemedText>
+                  <View
+                    style={[
+                      styles.countBadge,
+                      { backgroundColor: isDark ? '#26262E' : '#EFECE6' },
+                    ]}>
+                    <ThemedText style={styles.countBadgeText}>
+                      {goingRSVPs.length}
+                    </ThemedText>
+                  </View>
+                </View>
+
                 <ThemedText type="caption" style={{ color: '#8E8D94' }}>
-                  {goingRSVPs.length} going
-                  {maybeRSVPs.length > 0 ? ` · ${maybeRSVPs.length} maybe` : ''}
+                  {goingRSVPs.length} going{maybeRSVPs.length > 0 ? ` · ${maybeRSVPs.length} maybe` : ''}
                 </ThemedText>
               </View>
 
-              {/* Going Members List */}
-              {goingRSVPs.length > 0 ? (
-                <View style={styles.rsvpGroupSection}>
-                  <ThemedText style={styles.rsvpGroupLabel}>
-                    GOING ({goingRSVPs.length})
-                  </ThemedText>
-                  <View style={styles.membersGrid}>
-                    {goingRSVPs.map((r) => (
+              {/* Going Members */}
+              {goingRSVPs.length > 0 && (
+                <View style={styles.membersGrid}>
+                  {goingRSVPs.map((r) => (
+                    <View
+                      key={r.id || r.userName}
+                      style={[
+                        styles.memberChip,
+                        {
+                          backgroundColor: isDark ? '#222228' : '#FAF8F5',
+                          borderColor: isDark ? '#2D2D35' : '#EFECE6',
+                        },
+                      ]}>
                       <View
-                        key={r.id || r.userName}
                         style={[
-                          styles.memberChip,
-                          {
-                            backgroundColor: isDark ? '#222228' : '#FAF8F5',
-                            borderColor: isDark ? '#2D2D35' : '#EFECE6',
-                          },
+                          styles.chipAvatar,
+                          { backgroundColor: softTint },
                         ]}>
-                        <View
-                          style={[
-                            styles.chipAvatar,
-                            { backgroundColor: softTint },
-                          ]}>
-                          <ThemedText style={styles.chipInitials}>
-                            {r.initials}
-                          </ThemedText>
-                        </View>
-                        <ThemedText style={styles.chipName}>
-                          {r.userName}
+                        <ThemedText style={styles.chipInitials}>
+                          {r.initials}
                         </ThemedText>
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={14}
-                          color="#10B981"
-                        />
                       </View>
-                    ))}
-                  </View>
+                      <ThemedText style={styles.chipName}>
+                        {r.userName}
+                      </ThemedText>
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={15}
+                        color="#10B981"
+                      />
+                    </View>
+                  ))}
                 </View>
-              ) : null}
+              )}
 
-              {/* Maybe Members List */}
-              {maybeRSVPs.length > 0 ? (
-                <View style={[styles.rsvpGroupSection, { marginTop: 12 }]}>
-                  <ThemedText style={styles.rsvpGroupLabel}>
-                    MAYBE ({maybeRSVPs.length})
-                  </ThemedText>
-                  <View style={styles.membersGrid}>
-                    {maybeRSVPs.map((r) => (
+              {/* Maybe Members */}
+              {maybeRSVPs.length > 0 && (
+                <View style={[styles.membersGrid, { marginTop: 8 }]}>
+                  {maybeRSVPs.map((r) => (
+                    <View
+                      key={r.id || r.userName}
+                      style={[
+                        styles.memberChip,
+                        {
+                          backgroundColor: isDark ? '#222228' : '#FAF8F5',
+                          borderColor: isDark ? '#2D2D35' : '#EFECE6',
+                        },
+                      ]}>
                       <View
-                        key={r.id || r.userName}
                         style={[
-                          styles.memberChip,
-                          {
-                            backgroundColor: isDark ? '#222228' : '#FAF8F5',
-                            borderColor: isDark ? '#2D2D35' : '#EFECE6',
-                          },
+                          styles.chipAvatar,
+                          { backgroundColor: 'rgba(244, 215, 122, 0.25)' },
                         ]}>
-                        <View
-                          style={[
-                            styles.chipAvatar,
-                            { backgroundColor: 'rgba(244, 215, 122, 0.3)' },
-                          ]}>
-                          <ThemedText style={styles.chipInitials}>
-                            {r.initials}
-                          </ThemedText>
-                        </View>
-                        <ThemedText style={styles.chipName}>
-                          {r.userName}
+                        <ThemedText style={styles.chipInitials}>
+                          {r.initials}
                         </ThemedText>
-                        <Ionicons
-                          name="help-circle"
-                          size={14}
-                          color="#F59E0B"
-                        />
                       </View>
-                    ))}
-                  </View>
+                      <ThemedText style={styles.chipName}>
+                        {r.userName}
+                      </ThemedText>
+                      <Ionicons
+                        name="help-circle"
+                        size={15}
+                        color="#F59E0B"
+                      />
+                    </View>
+                  ))}
                 </View>
-              ) : null}
+              )}
+
+              {goingRSVPs.length === 0 && maybeRSVPs.length === 0 && (
+                <ThemedText style={styles.emptyRSVPText}>
+                  No responses yet. Select below to RSVP!
+                </ThemedText>
+              )}
             </View>
 
-            {/* RSVP Selector */}
+            {/* RSVP Response Selector */}
             <RSVPSelector
               currentStatus={currentRSVP}
               accentColor={accentColor}
@@ -426,38 +617,46 @@ export default function PlanDetailScreen() {
                 <ThemedText type="subtitle" style={styles.votingTitle}>
                   When should we do this?
                 </ThemedText>
-                <ThemedText type="caption" style={styles.choiceNote}>
-                  {plan.allowMultiple === false ? 'Single choice' : 'Multiple choices'}
-                </ThemedText>
+                <View
+                  style={[
+                    styles.choiceBadge,
+                    { backgroundColor: isDark ? '#26262E' : '#EFECE6' },
+                  ]}>
+                  <ThemedText style={styles.choiceBadgeText}>
+                    {plan.allowMultiple === false ? 'Single Choice' : 'Multiple Choices'}
+                  </ThemedText>
+                </View>
               </View>
               <ThemedText type="caption" style={styles.votingSub}>
                 {plan.allowMultiple === false
-                  ? 'Select the single best time that works for you:'
+                  ? 'Vote for the single best time that works for you:'
                   : 'Select all times that work for you:'}
               </ThemedText>
             </View>
 
             {/* Voting Options */}
-            {plan.options?.map((opt) => {
-              const isSelected = opt.voterIds.includes(CURRENT_USER.name);
-              return (
-                <PlanOptionCard
-                  key={opt.id}
-                  option={opt}
-                  isSelected={isSelected}
-                  accentColor={accentColor}
-                  onToggleVote={handleToggleVote}
-                  canFinalize={isCreator}
-                  onFinalize={() => handleOpenFinalize(opt.id)}
-                />
-              );
-            })}
+            <View style={{ gap: 10 }}>
+              {plan.options?.map((opt) => {
+                const isSelected = opt.voterIds.includes(currentUser.name);
+                return (
+                  <PlanOptionCard
+                    key={opt.id}
+                    option={opt}
+                    isSelected={isSelected}
+                    accentColor={accentColor}
+                    onToggleVote={handleToggleVote}
+                    canFinalize={isCreator}
+                    onFinalize={() => handleOpenFinalize(opt.id)}
+                  />
+                );
+              })}
+            </View>
 
             {/* Finalize Plan action for creator */}
             {isCreator && (
               <View style={styles.finalizeSection}>
                 <PrimaryButton
-                  title="Finalize Plan"
+                  title="Lock in Plan Time"
                   onPress={() => handleOpenFinalize()}
                   backgroundColor={accentColor}
                 />
@@ -470,7 +669,7 @@ export default function PlanDetailScreen() {
         {relatedPolls.length > 0 && (
           <View style={styles.decisionsSection}>
             <ThemedText type="body" weight="semiBold" style={styles.sectionHeading}>
-              Decisions & Polls
+              Linked Decisions & Polls
             </ThemedText>
             {relatedPolls.map((poll) => (
               <Pressable
@@ -497,7 +696,7 @@ export default function PlanDetailScreen() {
                 ]}>
                 <View style={styles.pollLinkLeft}>
                   <View style={[styles.pollIconBox, { backgroundColor: softTint }]}>
-                    <Ionicons name="bar-chart-outline" size={20} color={accentColor} />
+                    <Ionicons name="bar-chart" size={18} color={accentColor} />
                   </View>
                   <View style={styles.pollLinkTextGroup}>
                     <ThemedText type="body" weight="semiBold" style={styles.pollQuestion}>
@@ -701,57 +900,46 @@ const styles = StyleSheet.create({
   navSpaceBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 100,
-    backgroundColor: 'rgba(142, 141, 148, 0.12)',
+    borderWidth: 1,
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingTop: 8,
   },
-  badgeRow: {
-    flexDirection: 'row',
-    marginBottom: 8,
-  },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 100,
-    borderWidth: 1,
-    gap: 6,
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  statusBadgeText: {
-    fontSize: 10,
-    fontFamily: 'Poppins_600SemiBold',
-    letterSpacing: 0.6,
+  headerSection: {
+    marginBottom: 16,
   },
   planTitle: {
-    marginBottom: 4,
+    fontSize: 28,
+    lineHeight: 34,
+    marginBottom: 8,
+    letterSpacing: -0.4,
   },
   creatorRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 10,
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  creatorMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
   },
   creatorAvatar: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   creatorInitials: {
     fontSize: 10,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'Poppins_700Bold',
   },
   creatorText: {
     fontSize: 13,
@@ -761,75 +949,180 @@ const styles = StyleSheet.create({
   creatorName: {
     fontFamily: 'Poppins_600SemiBold',
   },
-  planNote: {
-    color: '#8E8D94',
-    marginBottom: 12,
-    fontSize: 14,
-    lineHeight: 20,
+  metaDot: {
+    width: 3.5,
+    height: 3.5,
+    borderRadius: 2,
   },
-  locationContainer: {
+  statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 20,
-  },
-  locationText: {
-    color: '#8E8D94',
-    fontSize: 14,
-    fontFamily: 'Poppins_500Medium',
-  },
-  confirmedDateBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 18,
-    borderRadius: 22,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 100,
     borderWidth: 1,
-    marginBottom: 16,
-    gap: 14,
+    gap: 5,
   },
-  bannerIconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  statusDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+  },
+  statusBadgeText: {
+    fontSize: 11,
+    fontFamily: 'Poppins_600SemiBold',
+    letterSpacing: 0.3,
+  },
+  metaDetailsCard: {
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 16,
+    gap: 10,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  metaIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 1,
   },
-  bannerTextGroup: {
+  metaTextGroup: {
     flex: 1,
   },
-  bannerLabel: {
+  metaLabel: {
     fontSize: 10,
     fontFamily: 'Poppins_600SemiBold',
     letterSpacing: 0.6,
-    color: '#71717A',
+    color: '#8E8D94',
+    marginBottom: 2,
   },
-  bannerDateText: {
-    fontSize: 18,
-    lineHeight: 24,
-    marginTop: 2,
+  metaValue: {
+    fontSize: 14,
   },
-  attendeesCard: {
+  metaNoteText: {
+    fontSize: 13.5,
+    lineHeight: 19,
+    color: '#8E8D94',
+  },
+  metaDivider: {
+    height: 1,
+    width: '100%',
+  },
+  ticketCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderRadius: 22,
     borderWidth: 1,
-    padding: 18,
+    padding: 14,
+    marginBottom: 16,
+    gap: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  calendarBlock: {
+    width: 68,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+    alignItems: 'center',
+  },
+  calendarMonthHeader: {
+    width: '100%',
+    paddingVertical: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  calendarMonthText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontFamily: 'Poppins_700Bold',
+    letterSpacing: 0.8,
+  },
+  calendarDayBody: {
+    paddingVertical: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  calendarDayNumber: {
+    fontSize: 22,
+    fontFamily: 'Poppins_700Bold',
+    lineHeight: 26,
+  },
+  calendarWeekdayText: {
+    fontSize: 9,
+    fontFamily: 'Poppins_600SemiBold',
+    color: '#8E8D94',
+    marginTop: -2,
+    letterSpacing: 0.4,
+  },
+  ticketDetails: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  ticketStatusRow: {
+    flexDirection: 'row',
+    marginBottom: 4,
+  },
+  miniLockPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 100,
+    gap: 4,
+  },
+  miniLockText: {
+    fontSize: 9.5,
+    fontFamily: 'Poppins_700Bold',
+    letterSpacing: 0.6,
+  },
+  ticketFullDate: {
+    fontSize: 16,
+    fontFamily: 'Poppins_600SemiBold',
+    lineHeight: 22,
+  },
+  ticketTimeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 3,
+  },
+  ticketTimeText: {
+    fontSize: 13,
+    fontFamily: 'Poppins_500Medium',
+    color: '#8E8D94',
+  },
+  attendeesCard: {
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 16,
     marginBottom: 16,
   },
   attendeesTop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 14,
+    marginBottom: 12,
   },
-  rsvpGroupSection: {
-    marginTop: 6,
+  countBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 100,
   },
-  rsvpGroupLabel: {
+  countBadgeText: {
     fontSize: 11,
     fontFamily: 'Poppins_600SemiBold',
     color: '#8E8D94',
-    letterSpacing: 0.5,
-    marginBottom: 8,
   },
   membersGrid: {
     flexDirection: 'row',
@@ -839,9 +1132,9 @@ const styles = StyleSheet.create({
   memberChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
+    paddingVertical: 5,
     paddingHorizontal: 10,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     gap: 6,
   },
@@ -857,30 +1150,41 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_600SemiBold',
   },
   chipName: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontFamily: 'Poppins_500Medium',
   },
-  avatarRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  emptyRSVPText: {
+    color: '#8E8D94',
+    fontSize: 13,
+    fontStyle: 'italic',
   },
   votingContainer: {
-    marginTop: 8,
+    marginTop: 4,
   },
   votingHeader: {
-    marginBottom: 16,
+    marginBottom: 14,
   },
   votingTitle: {
-    fontSize: 20,
-    lineHeight: 26,
+    fontSize: 18,
+    lineHeight: 24,
   },
   votingSub: {
     color: '#8E8D94',
-    marginTop: 2,
+    marginTop: 3,
+  },
+  choiceBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 100,
+  },
+  choiceBadgeText: {
+    fontSize: 11,
+    fontFamily: 'Poppins_600SemiBold',
+    color: '#8E8D94',
   },
   finalizeSection: {
-    marginTop: 12,
-    marginBottom: 20,
+    marginTop: 16,
+    marginBottom: 10,
   },
   modalOverlay: {
     flex: 1,
@@ -920,13 +1224,8 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   decisionsSection: {
-    marginTop: 20,
+    marginTop: 14,
     marginBottom: 10,
-  },
-  choiceNote: {
-    color: '#8E8D94',
-    fontFamily: 'Poppins_600SemiBold',
-    fontSize: 12,
   },
   sectionHeading: {
     fontSize: 12,
@@ -939,8 +1238,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    borderRadius: 22,
+    padding: 14,
+    borderRadius: 18,
     borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -954,9 +1253,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   pollIconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -964,7 +1263,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   pollQuestion: {
-    fontSize: 15,
+    fontSize: 14.5,
     fontFamily: 'Poppins_600SemiBold',
     lineHeight: 20,
   },
@@ -998,16 +1297,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: 8,
-    borderRadius: 14,
+    borderRadius: 12,
   },
   menuItemText: {
     fontSize: 15,
-    fontFamily: 'Poppins_600SemiBold',
+    fontFamily: 'Poppins_500Medium',
   },
   cancelMenuItem: {
     paddingVertical: 14,
-    marginTop: 8,
+    marginTop: 6,
   },
 });

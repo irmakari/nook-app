@@ -26,16 +26,29 @@ export default function PlansListScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const [space, setSpace] = useState<Space | null>(null);
+  const [space, setSpace] = useState<Space | null>(() => (spaceId ? spaceService.getSpaceSync(spaceId) || null : null));
   const [plans, setPlans] = useState<Plan[]>([]);
 
   useEffect(() => {
+    let isMounted = true;
     const loadData = async () => {
       if (spaceId) {
-        const foundSpace = await spaceService.getSpaceById(spaceId);
-        if (foundSpace) setSpace(foundSpace);
-        const loadedPlans = await spaceService.getPlans(spaceId);
-        setPlans(loadedPlans);
+        let foundSpace = spaceService.getSpaceSync(spaceId);
+        let loadedPlans: Plan[] = [];
+        if (!foundSpace) {
+          const [s, p] = await Promise.all([
+            spaceService.getSpaceById(spaceId),
+            spaceService.getPlans(spaceId),
+          ]);
+          foundSpace = s;
+          loadedPlans = p;
+        } else {
+          loadedPlans = await spaceService.getPlans(spaceId);
+        }
+        if (isMounted) {
+          if (foundSpace) setSpace(foundSpace);
+          setPlans(loadedPlans);
+        }
       }
     };
 
@@ -43,9 +56,12 @@ export default function PlansListScreen() {
 
     const unsubscribe = spaceService.subscribe(() => {
       loadData();
-    });
+    }, ['plans', 'spaces', 'session']);
 
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, [spaceId]);
 
   if (!space) {
