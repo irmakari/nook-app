@@ -18,8 +18,9 @@ import { CreateSpaceOption, SpaceType } from '@/components/CreateSpaceOption';
 import { AccentPicker } from '@/components/AccentPicker';
 import { SectionToggle } from '@/components/SectionToggle';
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { MemberSelector } from '@/components/MemberSelector';
 import { nookSpaceColors, getAccentTint } from '@/constants/theme';
-import { spaceService } from '@/services/space-service';
+import { spaceService, ALL_MOCK_USERS, SpaceMember } from '@/services/space-service';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 import { SpaceIcon } from '@/components/SpaceIcon';
@@ -136,8 +137,8 @@ export default function CreateSpaceScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  // Step state (1: Type, 2: Details & Accent, 3: Sections)
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  // Step state (1: Type, 2: Details & Accent, 3: Sections, 4: Invite Members)
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
   // Form state
   const [selectedType, setSelectedType] = useState<SpaceType>('friends');
@@ -148,6 +149,9 @@ export default function CreateSpaceScreen() {
     'Plans',
     'Polls',
     'Shared Lists',
+  ]);
+  const [invitedMembers, setInvitedMembers] = useState<SpaceMember[]>([
+    spaceService.getCurrentUser(),
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -167,11 +171,15 @@ export default function CreateSpaceScreen() {
       setStep(2);
     } else if (step === 2) {
       setStep(3);
+    } else if (step === 3) {
+      setStep(4);
     }
   };
 
   const handleBack = () => {
-    if (step === 3) {
+    if (step === 4) {
+      setStep(3);
+    } else if (step === 3) {
       setStep(2);
     } else if (step === 2) {
       setStep(1);
@@ -197,13 +205,19 @@ export default function CreateSpaceScreen() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
 
-      await spaceService.createSpace({
+      const created = await spaceService.createSpace({
         name: name.trim(),
         icon,
         accentColor,
         type: selectedType,
         sections: selectedSections,
       });
+
+      for (const member of invitedMembers) {
+        if (member.name !== spaceService.getCurrentUser().name) {
+          await spaceService.addSpaceMember(created.id, member);
+        }
+      }
 
       router.back();
     } catch (err) {
@@ -227,19 +241,23 @@ export default function CreateSpaceScreen() {
               ? "Who's this space for?"
               : step === 2
               ? 'Space Details'
-              : 'Suggested Sections'
+              : step === 3
+              ? 'Suggested Sections'
+              : 'Who do you want to invite?'
           }
           subtitle={
             step === 1
               ? 'Choose a foundation for your group'
               : step === 2
               ? 'Give your space an identity and personality'
-              : 'Customize what your group can do together'
+              : step === 3
+              ? 'Customize what your group can do together'
+              : 'Select members to add to your space right away'
           }
           action={
             <View style={styles.stepIndicator}>
               <ThemedText style={styles.stepText}>
-                Step {step} of 3
+                Step {step} of 4
               </ThemedText>
             </View>
           }
@@ -426,6 +444,29 @@ export default function CreateSpaceScreen() {
             ))}
           </View>
         )}
+
+        {/* STEP 4: INVITE MEMBERS */}
+        {step === 4 && (
+          <View style={styles.stepContainer}>
+            <View style={styles.sectionsIntro}>
+              <ThemedText type="body" style={styles.introText}>
+                Select who you want to invite to{' '}
+                <ThemedText type="body" weight="semiBold">
+                  {name}
+                </ThemedText>
+                :
+              </ThemedText>
+            </View>
+
+            <MemberSelector
+              spaceName={name}
+              allMembers={ALL_MOCK_USERS}
+              selectedMembers={invitedMembers}
+              onUpdateSelectedMembers={setInvitedMembers}
+              accentColor={accentColor}
+            />
+          </View>
+        )}
       </ScrollView>
 
       {/* Bottom Sticky Action Bar */}
@@ -439,7 +480,7 @@ export default function CreateSpaceScreen() {
             paddingBottom: insets.bottom > 0 ? insets.bottom + 12 : 16,
           },
         ]}>
-        {step < 3 ? (
+        {step < 4 ? (
           <PrimaryButton
             title="Continue"
             onPress={handleNext}
@@ -447,7 +488,7 @@ export default function CreateSpaceScreen() {
           />
         ) : (
           <PrimaryButton
-            title="Create Space"
+            title="Create Space 🚀"
             onPress={handleCreateSpace}
             loading={isSubmitting}
             backgroundColor={accentColor}

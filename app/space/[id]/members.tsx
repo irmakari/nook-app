@@ -55,7 +55,7 @@ export default function SpaceMembersScreen() {
 
     const unsubscribe = spaceService.subscribe(() => {
       loadData();
-    });
+    }, ['spaces', 'session']);
 
     return () => unsubscribe();
   }, [id]);

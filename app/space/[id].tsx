@@ -48,7 +48,7 @@ export default function SpaceDetailScreen() {
 
     const unsubscribe = spaceService.subscribe(() => {
       fetchSpace();
-    });
+    }, ['spaces', 'plans', 'polls', 'lists', 'tasks', 'notes', 'session']);
 
     return () => unsubscribe();
   }, [id]);
@@ -119,18 +119,33 @@ export default function SpaceDetailScreen() {
     }
   };
 
-  const handleOpenSection = async (sectionName: string) => {
+  const handleOpenSection = (sectionName: string) => {
     if (sectionName === 'Polls') {
-      const spacePolls = await spaceService.getPolls(space.id);
-      if (spacePolls.length > 0) {
-        router.push({
-          pathname: '/poll/[id]',
-          params: { id: spacePolls[0].id },
-        });
-      } else {
+      const meta = space.sectionMeta?.[sectionName] || '';
+      const count = parseInt(meta, 10);
+      if (Number.isFinite(count) && count <= 0) {
         router.push({
           pathname: '/poll/create',
           params: { spaceId: space.id },
+        });
+      } else {
+        void spaceService.getPolls(space.id).then((spacePolls) => {
+          if (spacePolls.length > 0) {
+            router.push({
+              pathname: '/poll/[id]',
+              params: { id: spacePolls[0].id },
+            });
+          } else {
+            router.push({
+              pathname: '/poll/create',
+              params: { spaceId: space.id },
+            });
+          }
+        }).catch(() => {
+          router.push({
+            pathname: '/poll/create',
+            params: { spaceId: space.id },
+          });
         });
       }
     } else if (sectionName === 'Plans') {
@@ -139,16 +154,31 @@ export default function SpaceDetailScreen() {
         params: { spaceId: space.id },
       });
     } else if (sectionName === 'Shared Lists' || sectionName === 'Shopping') {
-      const spaceLists = await spaceService.getLists(space.id);
-      if (spaceLists.length > 0) {
-        router.push({
-          pathname: '/list/[id]',
-          params: { id: spaceLists[0].id },
-        });
-      } else {
+      const meta = space.sectionMeta?.[sectionName] || '';
+      const count = parseInt(meta, 10);
+      if (Number.isFinite(count) && count <= 0) {
         router.push({
           pathname: '/list/create',
           params: { spaceId: space.id },
+        });
+      } else {
+        void spaceService.getLists(space.id).then((spaceLists) => {
+          if (spaceLists.length > 0) {
+            router.push({
+              pathname: '/list/[id]',
+              params: { id: spaceLists[0].id },
+            });
+          } else {
+            router.push({
+              pathname: '/list/create',
+              params: { spaceId: space.id },
+            });
+          }
+        }).catch(() => {
+          router.push({
+            pathname: '/list/create',
+            params: { spaceId: space.id },
+          });
         });
       }
     } else if (sectionName === 'To-do') {
